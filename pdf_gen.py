@@ -1,117 +1,107 @@
 from fpdf import FPDF
 from datetime import datetime
-import io
 
-class PolykretPDF(FPDF):
+class BekaertPDF(FPDF):
     def header(self):
-        # Logo placeholder (puedes añadir uno real luego)
-        self.set_font('Arial', 'B', 15)
+        self.set_font('Arial', 'B', 14)
         self.set_text_color(0, 77, 128)
         self.cell(0, 10, 'POLY KRET - MEMORIA TÉCNICA ESTRUCTURAL', 0, 1, 'C')
-        self.ln(5)
+        self.set_font('Arial', 'I', 9)
+        self.cell(0, 5, 'Asistencia Técnica Basada en Estándares Dramix® SoG / TR34 (4th Ed)', 0, 1, 'C')
+        self.ln(10)
 
     def footer(self):
         self.set_y(-15)
         self.set_font('Arial', 'I', 8)
         self.set_text_color(128, 128, 128)
-        self.cell(0, 10, f'Página {self.page_no()} | Dramix Pro Slab on Ground | Generado por Poly Expert', 0, 0, 'C')
+        self.cell(0, 10, f'Página {self.page_no()} | Documento Generado por Poly Expert | Bekaert Compliant', 0, 0, 'C')
 
 def render_pdf(data):
-    pdf = PolykretPDF()
+    pdf = BekaertPDF()
     pdf.add_page()
     pdf.set_font("Arial", size=10)
 
-    # 1. ENCABEZADO DE PROYECTO
-    pdf.set_fill_color(240, 240, 240)
+    # 1. INFO PROYECTO
+    pdf.set_fill_color(230, 240, 250)
     pdf.set_font('Arial', 'B', 12)
-    pdf.cell(0, 10, f"Proyecto: {data['project_name']}", 0, 1, 'L', True)
+    pdf.cell(0, 10, f" PROYECTO: {data.get('project_name', 'N/A').upper()}", 0, 1, 'L', True)
     pdf.set_font('Arial', '', 10)
-    pdf.cell(0, 7, f"Cliente: {data['client_name']}", 0, 1)
-    pdf.cell(0, 7, f"Ubicación: {data['location']}", 0, 1)
-    pdf.cell(0, 7, f"Fecha: {data['date']} {data['time']}", 0, 1)
+    pdf.cell(95, 7, f" Cliente: {data.get('client_name', 'N/A')}", 0, 0)
+    pdf.cell(95, 7, f" Fecha: {data['date']}", 0, 1, 'R')
     pdf.ln(5)
 
-    # 2. DATOS DE ENTRADA
+    # 2. SECCIÓN TÉCNICA
     pdf.set_font('Arial', 'B', 11)
     pdf.set_text_color(0, 51, 102)
-    pdf.cell(0, 10, "1. PARÁMETROS DE DISEÑO", 0, 1)
+    pdf.cell(0, 10, "1. PROPIEDADES DE MATERIALES Y SOPORTE", 0, 1)
     pdf.set_text_color(0, 0, 0)
     pdf.set_font('Arial', '', 10)
     
-    col_width = 90
-    pdf.cell(col_width, 7, f"Espesor de losa: {data['thickness']} mm", 1)
-    pdf.cell(col_width, 7, f"Resistencia Concreto (f'c): {data['fc']} kg/cm2", 1, 1)
-    pdf.cell(col_width, 7, f"Suelo (CBR): {data['cbr']}%", 1)
-    pdf.cell(col_width, 7, f"Módulo K: {data['k_val']} N/mm3", 1, 1)
-    pdf.cell(col_width, 7, f"Fibra: {data['fiber_type']}", 1)
-    pdf.cell(col_width, 7, f"Dosificación: {data['dosage']} kg/m3", 1, 1)
+    pdf.cell(90, 7, f" Espesor de Losa (h):", 1)
+    pdf.cell(90, 7, f" {data['thickness']} mm", 1, 1)
+    pdf.cell(90, 7, f" Resistencia Concreto (f'c):", 1)
+    pdf.cell(90, 7, f" {data['fc']} kg/cm2 (fck ~ {data['fck']} MPa)", 1, 1)
+    pdf.cell(90, 7, f" Suelo (CBR):", 1)
+    pdf.cell(90, 7, f" {data['cbr']} %", 1, 1)
+    pdf.cell(90, 7, f" Módulo de Reacción K:", 1)
+    pdf.cell(90, 7, f" {data['k_val']} N/mm3", 1, 1)
+    pdf.cell(90, 7, f" Longitud Elástica (lel):", 1)
+    pdf.cell(90, 7, f" {data['lel']} mm", 1, 1)
     pdf.ln(5)
 
     # 3. CARGAS
     pdf.set_font('Arial', 'B', 11)
-    pdf.cell(0, 10, "2. CARGAS CONSIDERADAS", 0, 1)
+    pdf.cell(0, 10, "2. SOLICITACIONES (CARGAS DE DISEÑO)", 0, 1)
     pdf.set_font('Arial', '', 10)
-    pdf.cell(col_width, 7, f"Carga Puntual Actuante: {data['load_f']} kN", 1)
-    pdf.cell(col_width, 7, f"Carga de Diseño (x{data['gamma_q']}): {round(data['load_f']*data['gamma_q'], 1)} kN", 1, 1)
-    if data.get('udl_q', 0) > 0:
-        pdf.cell(0, 7, f"Carga Distribuida (UDL): {data['udl_q']} kN/m2", 1, 1)
+    pdf.cell(90, 7, f" Carga Puntual (Pata de Rack):", 1)
+    pdf.cell(90, 7, f" {data['load_f']} kN", 1, 1)
+    pdf.cell(90, 7, f" Placa Base:", 1)
+    pdf.cell(90, 7, f" {data['plate_x']} x {data['plate_y']} mm", 1, 1)
     pdf.ln(5)
 
-    # 4. RESULTADOS DE VERIFICACIÓN
+    # 4. VERIFICACIÓN DE CAPACIDAD
     pdf.set_font('Arial', 'B', 11)
-    pdf.cell(0, 10, "3. VERIFICACIÓN DE UTILIZACIÓN (TR34 4th Ed)", 0, 1)
+    pdf.cell(0, 10, "3. RESULTADOS DE VERIFICACIÓN (TR34)", 0, 1)
     
+    # Capacidad Momentos
+    pdf.set_fill_color(240, 240, 240)
     pdf.set_font('Arial', 'B', 10)
-    pdf.cell(60, 7, "Posición", 1, 0, 'C', True)
-    pdf.cell(60, 7, "Momento Actuante", 1, 0, 'C', True)
-    pdf.cell(60, 7, "Utilización", 1, 1, 'C', True)
+    pdf.cell(60, 8, " Ubicación", 1, 0, 'C', True)
+    pdf.cell(60, 8, " Momento Actuante", 1, 0, 'C', True)
+    pdf.cell(60, 8, " Utilización (%)", 1, 1, 'C', True)
     
     pdf.set_font('Arial', '', 10)
-    positions = [
-        ("Centro de Losa", data['m_ed'], data['utilization']),
-        ("Juntas de Construcción", data['m_ed_joint'], data['utilization_joint']),
-        ("Bordes / Esquinas", data['m_ed_edge'], data['utilization_edge']),
+    checks = [
+        ("Centro de Losa", f"{data['m_ed_center']} kNm/m", data['utilization']),
+        ("Juntas Primarias", f"{data['m_ed_joint']} kNm/m", data['utilization_joint']),
+        ("Bordes / Esquinas", f"{data['m_ed_edge']} kNm/m", data['utilization_edge']),
+        ("Presión Suelo", f"{data['p_ed_soil']} kN/m2", data['utilization_soil']),
     ]
     
-    for pos, med, util in positions:
-        pdf.cell(60, 7, pos, 1)
-        pdf.cell(60, 7, f"{round(med, 2)} kNm/m", 1, 0, 'C')
-        
-        # Color según utilización
+    for label, val, util in checks:
+        pdf.cell(60, 7, f" {label}", 1)
+        pdf.cell(60, 7, f" {val}", 1, 0, 'C')
         if util > 100:
             pdf.set_text_color(200, 0, 0)
+            pdf.set_font('Arial', 'B', 10)
         else:
-            pdf.set_text_color(0, 128, 0)
-            
-        pdf.cell(60, 7, f"{util}%", 1, 1, 'C')
+            pdf.set_text_color(0, 100, 0)
+        pdf.cell(60, 7, f" {util} %", 1, 1, 'C')
         pdf.set_text_color(0, 0, 0)
+        pdf.set_font('Arial', '', 10)
 
-    pdf.ln(5)
-    pdf.cell(90, 7, "Punzonamiento (Punching):", 1)
-    pdf.cell(90, 7, f"{data['utilization_punch']}%", 1, 1, 'C')
     pdf.ln(10)
 
-    # 5. CONCLUSIÓN Y RECOMENDACIONES
+    # 5. CONCLUSIÓN
     pdf.set_font('Arial', 'B', 11)
-    pdf.cell(0, 10, "4. CONCLUSIONES Y RECOMENDACIONES", 0, 1)
-    
-    if all(u <= 100 for u in [data['utilization'], data['utilization_joint'], data['utilization_edge'], data['utilization_punch']]):
-        pdf.set_fill_color(200, 255, 200)
-        pdf.set_font('Arial', 'B', 10)
-        pdf.cell(0, 10, "ESTADO: DISEÑO ACEPTADO", 1, 1, 'C', True)
-    else:
-        pdf.set_fill_color(255, 200, 200)
-        pdf.set_font('Arial', 'B', 10)
-        pdf.cell(0, 10, "ESTADO: REDISEÑO REQUERIDO", 1, 1, 'C', True)
-    
-    pdf.ln(5)
-    pdf.set_font('Arial', '', 9)
+    pdf.cell(0, 10, "4. OBSERVACIONES Y RECOMENDACIONES", 0, 1)
+    pdf.set_font('Arial', '', 10)
     for rec in data.get('recommendations', []):
-        pdf.multi_cell(0, 5, f"* {rec}")
+        pdf.multi_cell(0, 7, f" * {rec}")
     
-    pdf.ln(10)
+    pdf.ln(15)
     pdf.set_font('Arial', 'I', 8)
-    pdf.multi_cell(0, 4, "Nota: Esta asistencia técnica automatizada debe ser validada por el ingeniero responsable de la obra. Los cálculos siguen los lineamientos de TR34 y Eurocode 2.")
+    pdf.set_text_color(100, 100, 100)
+    pdf.multi_cell(0, 4, "Aviso Legal: Los cálculos presentados son referenciales y se basan exclusivamente en las propiedades de las fibras Dramix®. El uso de otras fibras anula la validez de este diseño. Este reporte debe ser verificado y firmado por un Ingeniero Civil colegiado responsable de la obra.")
 
-    # Generar salida en bytes
     return pdf.output()
