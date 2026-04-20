@@ -27,13 +27,14 @@ engine = PolykretEngine()
 
 @app.get("/", response_class=HTMLResponse)
 async def read_root(request: Request):
-    if not templates:
-        return "<h1>API Polykret Activa</h1><p>Sistema en línea.</p>"
-    try:
-        # Usar la firma más básica posible
-        return templates.TemplateResponse("index.html", {"request": request})
-    except Exception as e:
-        return f"<h1>Error de Sistema</h1><p>{str(e)}</p>"
+    if templates:
+        try:
+            # Renderizado manual para evitar el error de Starlette en Vercel
+            content = templates.get_template("index.html").render({"request": request})
+            return HTMLResponse(content=content)
+        except Exception as e:
+            return f"<h1>Error de Renderizado</h1><p>{str(e)}</p>"
+    return "<h1>Polykret API Activa</h1>"
 
 def perform_calculations(data: dict):
     # Lógica de cálculo (omito detalles por brevedad pero está completa)
