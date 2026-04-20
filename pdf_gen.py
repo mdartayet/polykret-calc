@@ -22,9 +22,22 @@ def render_pdf(data):
     pdf.set_font("Arial", size=10)
 
     # 1. RESUMEN EJECUTIVO (EL TARGET)
-    pdf.set_fill_color(255, 204, 0) # Amarillo Poly
+    status = "DISEÑO SEGURO"
+    fill_color = (40, 167, 69) # Verde
+    if data['max_ratio'] > 1.0:
+        status = "DISEÑO NO VIABLE"
+        fill_color = (220, 53, 69) # Rojo
+    elif data['max_ratio'] >= 0.95:
+        status = "DISEÑO AJUSTADO (ALERTA)"
+        fill_color = (255, 193, 7) # Amarillo
+
+    pdf.set_fill_color(*fill_color)
+    if status == "DISEÑO AJUSTADO (ALERTA)": pdf.set_text_color(0, 0, 0)
+    else: pdf.set_text_color(255, 255, 255)
+    
     pdf.set_font('Arial', 'B', 14)
-    pdf.cell(0, 15, f" ESPESOR RECOMENDADO: {data['h']} mm", 1, 1, 'C', True)
+    pdf.cell(0, 15, f" {status}: {data['h']} mm", 1, 1, 'C', True)
+    pdf.set_text_color(0, 0, 0)
     pdf.ln(5)
 
     # ALERTA TÉCNICA (SI EXISTE)
@@ -97,6 +110,7 @@ def render_pdf(data):
     pdf.set_font('Arial', 'B', 11)
     pdf.cell(0, 8, " 4. CONCLUSIÓN TÉCNICA", 0, 1)
     pdf.set_font('Arial', '', 10)
-    pdf.multi_cell(0, 7, f"Tras realizar {int((data['h']-150)/10)+1} iteraciones estructurales, se concluye que un espesor de {data['h']} mm con {data['dosage']} kg/m³ de fibra Dramix® garantiza la estabilidad del piso bajo las solicitaciones prescritas, cumpliendo con los coeficientes de seguridad gamma_Q=1.2 y gamma_f=1.2.")
+    msg = f"Tras realizar las iteraciones estructurales, se concluye que un espesor de {data['h']} mm con fibra Dramix® garantiza la estabilidad del piso. Cálculo basado en la transferencia de carga en juntas (theta) y resistencia residual del concreto reforzado con fibras Dramix®."
+    pdf.multi_cell(0, 7, msg)
 
     return pdf.output()

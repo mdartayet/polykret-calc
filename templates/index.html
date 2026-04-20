@@ -258,11 +258,11 @@
                     <input type="number" name="load_f" value="77">
                 </div>
                 <div class="input-group">
-                    <label>Rack Config</label>
+                    <label>Rack Config (Grouping)</label>
                     <select name="n_legs">
-                        <option value="1">1x (Single leg)</option>
-                        <option value="2">2x (Back-to-back)</option>
-                        <option value="4">4x (Group load)</option>
+                        <option value="1">Aislada (1x)</option>
+                        <option value="2" selected>Combinada (2x Back-to-back)</option>
+                        <option value="4">Cluster (4x legs)</option>
                     </select>
                 </div>
                 <div class="input-group">
@@ -368,6 +368,12 @@
         const resp = await fetch('/calculate', { method: 'POST', body: fd });
         const data = await resp.json();
 
+        const getStatusColor = (ratio) => {
+            if (ratio > 1.0) return '#dc3545'; // Rojo (Falla)
+            if (ratio >= 0.95) return '#ffc107'; // Amarillo (Alerta)
+            return '#28a745'; // Verde (Seguro)
+        };
+
         summary.innerHTML = `
             ${data.technical_alert ? `
                 <div style="background:#fff3cd; color:#856404; padding:15px; border:1px solid #ffeeba; border-radius:8px; margin-bottom:20px; font-weight:bold; border-left:5px solid #ffc107;">
@@ -377,23 +383,23 @@
             <div style="text-align:center; padding:20px; border:2px solid #004d80; border-radius:15px; background:white; margin-bottom:20px;">
                 <h1 style="margin:0; font-size:3rem; color:#004d80;">${data.h} mm</h1>
                 <p style="font-weight:600; text-transform:uppercase; letter-spacing:1px; margin:5px 0;">Espesor Mínimo Recomendado</p>
-                <div style="display:inline-block; padding:5px 15px; background:#ffcc00; border-radius:20px; font-size:0.9rem; font-weight:bold;">
-                    Diseño Optimizado (TR34/Bekaert)
+                <div style="display:inline-block; padding:5px 15px; background:${getStatusColor(data.max_ratio)}; color:${data.max_ratio >= 0.95 && data.max_ratio <= 1.0 ? 'black' : 'white'}; border-radius:20px; font-size:0.9rem; font-weight:bold;">
+                    ${data.max_ratio > 1.0 ? 'DISEÑO NO VIABLE' : data.max_ratio >= 0.95 ? 'DISEÑO AJUSTADO (ALERTA)' : 'DISEÑO SEGURO'}
                 </div>
             </div>
             
             <div class="grid-2">
                 <div class="result-card" style="background:#f8f9fa; border:1px solid #ddd;">
-                    <h3 style="margin-top:0">Ratios de Utilización</h3>
-                    <p>Flexión (Centro): <strong>${data.ratio_flex}</strong></p>
-                    <p>Punzonamiento: <strong>${data.ratio_punch}</strong></p>
-                    <p>Presión Suelo: <strong>${data.ratio_soil}</strong></p>
+                    <h3 style="margin-top:0">Ratios de Utilización (TR34)</h3>
+                    <p>Flexión (mEd/mRd): <strong style="color:${getStatusColor(data.ratio_flex)}">${data.ratio_flex}</strong></p>
+                    <p>Punzonamiento: <strong style="color:${getStatusColor(data.ratio_punch)}">${data.ratio_punch}</strong></p>
+                    <p>Presión Suelo: <strong style="color:${getStatusColor(data.ratio_soil)}">${data.ratio_soil}</strong></p>
                 </div>
                 <div class="result-card" style="background:#f8f9fa; border:1px solid #ddd;">
                     <h3 style="margin-top:0">Detalles Técnicos</h3>
                     <p>Módulo K: ${data.k_val} N/mm³</p>
-                    <p>Longitud Elástica: ${data.lel} mm</p>
-                    <p>Dosificación: ${data.dosage} kg/m³</p>
+                    <p>Carga efectiva: ${data.h}mm slab</p>
+                    <p style="font-size:0.75rem; color:#666; font-style:italic;">Cálculo basado en la transferencia de carga en juntas (θ) y resistencia residual del concreto reforzado con fibras Dramix®.</p>
                 </div>
             </div>
         `;
