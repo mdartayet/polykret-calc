@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Polykret | Material Calculator</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <aside>
+            <div class="logo-container">
+                <h1>POLY<span>KRET</span></h1>
+                <p style="font-size: 0.75rem; opacity: 0.6; margin-top: 0.5rem;">CÁLCULO ESTRUCTURAL V1.0</p>
+            </div>
+            <nav>
+                <ul>
+                    <li class="active">Nueva Memoria</li>
+                    <li>Historial</li>
+                    <li>Configuración</li>
+                </ul>
+            </nav>
+            <div style="margin-top: auto; font-size: 0.75rem; opacity: 0.5;">
+                &copy; 2026 Polykret Structural Engine
+            </div>
+        </aside>
+
+        <main>
+            <header>
+                <div>
+                    <h2>Generador de Memoria de Cálculo</h2>
+                    <p style="color: var(--text-muted);">Estándar TR34 4th Edition / Eurocode 2</p>
+                </div>
+                <button type="button" form="calc-form" id="submit-btn" class="btn-primary">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                    GENERAR REPORTE PDF
+                </button>
+            </header>
+
+            <form id="calc-form" class="grid-forms" action="/generate-pdf" method="POST">
+                <!-- Sección Proyecto -->
+                <section class="card">
+                    <h3>Información del Proyecto</h3>
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label>Nombre del Proyecto</label>
+                            <input type="text" name="project_name" placeholder="Ej: Centro Logístico Promart" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Cliente</label>
+                            <input type="text" name="client_name" placeholder="Nombre de la empresa" required>
+                        </div>
+                    </div>
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label>Contacto</label>
+                            <input type="text" name="contact_person" placeholder="Ing. Pedro Cevallos">
+                        </div>
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" name="email" placeholder="ejemplo@correo.com">
+                        </div>
+                    </div>
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label>Teléfono</label>
+                            <input type="text" name="phone" placeholder="T +593 ...">
+                        </div>
+                        <div class="form-group">
+                            <label>Ubicación / Ciudad</label>
+                            <input type="text" name="location" placeholder="Ciudad, Sector">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Observaciones</label>
+                        <textarea name="observation" rows="2" placeholder="CBR 30%_sc 4x4..."></textarea>
+                    </div>
+                </section>
+
+                <!-- Sección Calculista -->
+                <section class="card">
+                    <h3>Datos del Calculista</h3>
+                    <div class="form-group">
+                        <label>Empresa</label>
+                        <input type="text" name="company_name" value="IdealAlambrec Bekaert" required>
+                    </div>
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label>Nombre Responsable</label>
+                            <input type="text" name="prepared_by" value="Melanie Naranjo" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Email del Calculista</label>
+                            <input type="email" name="designer_email" value="Melanie.Naranjo@bekaert.com" required>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Sección Geometría -->
+                <section class="card">
+                    <h3>Geometría de la Losa</h3>
+                    <div class="form-group">
+                        <label>Espesor de Losa (h) [mm]</label>
+                        <input type="number" name="thickness" value="200" step="5" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Distancia entre Juntas (L) [m]</label>
+                        <input type="number" name="joint_dist" value="4.0" step="0.1">
+                    </div>
+                    <div class="form-group">
+                        <label>Soporte Suelo (CBR%)</label>
+                        <input type="number" name="cbr" value="30" step="1">
+                    </div>
+                </section>
+
+                <!-- Sección Materiales -->
+                <section class="card">
+                    <h3>Especificaciones de Materiales</h3>
+                    <div class="form-group">
+                        <label>Resistencia Concreto (f'c) [kg/cm²]</label>
+                        <select name="fc">
+                            <option value="210">210 kg/cm²</option>
+                            <option value="240">240 kg/cm²</option>
+                            <option value="280" selected>280 kg/cm²</option>
+                            <option value="300">300 kg/cm²</option>
+                            <option value="350">350 kg/cm²</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Tipo de Fibra Dramix</label>
+                        <select name="fiber_type">
+                            <option value="4D 80/60BGE">Dramix 4D 80/60BGE</option>
+                            <option value="3D 65/60BG">Dramix 3D 65/60BG</option>
+                            <option value="5D 65/60BG">Dramix 5D 65/60BG</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Dosificación Fibra [kg/m³]</label>
+                        <input type="number" name="dosage" value="22" step="0.5">
+                    </div>
+                </section>
+
+                <!-- Sección Cargas -->
+                <section class="card">
+                    <h3>Cargas Puntuales</h3>
+                    <div class="form-group">
+                        <label>Magnitud de Carga (F) [kN]</label>
+                        <input type="number" name="load_f" value="77.0" step="0.1">
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group">
+                            <label>Placa X [mm]</label>
+                            <input type="number" name="plate_x" value="150">
+                        </div>
+                        <div class="form-group">
+                            <label>Placa Y [mm]</label>
+                            <input type="number" name="plate_y" value="150">
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Sección Cargas Extra -->
+                <section class="card">
+                    <h3>Cargas Distribuidas y Refuerzo</h3>
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label>Carga UDL [kN/m²]</label>
+                            <input type="number" name="udl_q" value="0" step="0.1">
+                        </div>
+                        <div class="form-group">
+                            <label>Carga en Línea [kN/m]</label>
+                            <input type="number" name="line_p" value="0" step="0.1">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Refuerzo en Bordes (As) [mm²/m]</label>
+                        <input type="number" name="as_area" value="0" step="1" placeholder="Ej: 503 para 8 fi 10">
+                    </div>
+                </section>
+            </form>
+
+            <div id="results-preview" class="card" style="margin-top: 2rem; display: block;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h3>Pre-Visualización de Resultados</h3>
+                    <span id="calc-status" style="font-size: 0.75rem; color: var(--text-muted);">Actualizado</span>
+                </div>
+                
+                <div class="grid-2" style="gap: 2rem;">
+                    <div>
+                        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem;">UTILIZACIÓN MÁXIMA (CENTRO)</p>
+                        <div style="display: flex; align-items: baseline; gap: 0.5rem;">
+                            <span id="preview-util" style="font-size: 2.5rem; font-weight: 800; color: var(--primary);">0%</span>
+                            <span id="preview-status" style="font-weight: 600;">-</span>
+                        </div>
+                        <div id="util-bar-container" style="width: 100%; height: 8px; background: #eee; border-radius: 4px; margin-top: 1rem; overflow: hidden;">
+                            <div id="util-bar" style="width: 0%; height: 100%; background: var(--primary); transition: width 0.3s ease;"></div>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="res-item">
+                            <label>mRd Total</label>
+                            <div id="preview-mrd">0.0</div>
+                        </div>
+                        <div class="res-item">
+                            <label>Longitud Elástica (lel)</label>
+                            <div id="preview-lel">0.0</div>
+                        </div>
+                        <div class="res-item">
+                            <label>fck (MPa)</label>
+                            <div id="preview-fck">0.0</div>
+                        </div>
+                        <div class="res-item">
+                            <label>Módulo k (N/mm³)</label>
+                            <div id="preview-k">0.0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="recommendations-container" style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid #efefef;">
+                    <h4 style="font-size: 0.9rem; color: var(--primary); margin-bottom: 1rem;">RECOMENDACIONES TÉCNICAS</h4>
+                    <ul id="recs-list" style="list-style: none; font-size: 0.875rem;">
+                        <!-- Poblado por JS -->
+                    </ul>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const form = document.getElementById('calc-form');
+        const submitBtn = document.getElementById('submit-btn');
+        const statusLabel = document.getElementById('calc-status');
+
+        submitBtn.addEventListener('click', () => {
+            form.submit();
+        });
+
+        // Live Calculation
+        const updatePreview = async () => {
+            statusLabel.textContent = "Calculando...";
+            const formData = new FormData(form);
+            
+            try {
+                const response = await fetch('/calculate', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                
+                // Update UI
+                const util = data.utilization;
+                document.getElementById('preview-util').textContent = util + '%';
+                document.getElementById('preview-mrd').textContent = data.m_rd_total + ' kNm/m';
+                document.getElementById('preview-lel').textContent = data.lel.toFixed(1) + ' mm';
+                document.getElementById('preview-fck').textContent = data.fck + ' N/mm²';
+                document.getElementById('preview-k').textContent = data.k_val.toFixed(4);
+                
+                const bar = document.getElementById('util-bar');
+                bar.style.width = Math.min(util, 100) + '%';
+                bar.style.background = util > 100 ? '#ef4444' : 'var(--primary)';
+                
+                const status = document.getElementById('preview-status');
+                status.textContent = util > 100 ? 'REDISEÑO' : 'CUMPLE';
+                status.style.color = util > 100 ? '#ef4444' : '#10b981';
+                
+                // Update Recommendations
+                const recsList = document.getElementById('recs-list');
+                recsList.innerHTML = '';
+                data.recommendations.forEach(rec => {
+                    const li = document.createElement('li');
+                    li.style.marginBottom = '0.5rem';
+                    li.textContent = rec;
+                    recsList.appendChild(li);
+                });
+                
+                statusLabel.textContent = "Actualizado";
+            } catch (err) {
+                console.error(err);
+                statusLabel.textContent = "Error";
+            }
+        };
+
+        // Escuchar cambios en campos relevantes
+        const triggerFields = ['thickness', 'cbr', 'fc', 'fiber_type', 'dosage', 'load_f', 'plate_x', 'plate_y', 'udl_q', 'line_p', 'as_area'];
+
+        triggerFields.forEach(name => {
+            const el = form.querySelector(`[name="${name}"]`);
+            if (el) {
+                el.addEventListener('input', updatePreview);
+                el.addEventListener('change', updatePreview);
+            }
+        });
+
+        // Run once on load
+        window.addEventListener('DOMContentLoaded', updatePreview);
+    </script>
+</body>
+</html>

@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: 'Helvetica', 'Arial', sans-serif; font-size: 8pt; color: #333; line-height: 1.2; }
+        .page-break { page-break-before: always; }
+        .full-width { width: 100%; }
+        
+        /* Typography */
+        h1 { color: #004d80; font-size: 18pt; text-align: center; margin-top: 15pt; }
+        h2 { color: #004d80; font-size: 13pt; border-bottom: 1pt solid #004d80; padding-bottom: 2pt; margin-top: 12pt; text-transform: uppercase; }
+        h3 { color: #004d80; font-size: 10pt; margin-top: 10pt; border-left: 3pt solid #004d80; padding-left: 6pt; }
+        .subtitle { font-size: 12pt; text-align: center; color: #444; margin-bottom: 20pt; font-weight: bold; }
+        
+        /* Tables */
+        table { width: 100%; border-collapse: collapse; margin-bottom: 10pt; }
+        th, td { border: 1pt solid #aaa; padding: 4pt; text-align: left; }
+        th { background-color: #f0f4f8; font-weight: bold; color: #004d80; }
+        .no-border td, .no-border th { border: none; padding: 2pt; }
+        
+        /* Layout */
+        .header-table { width: 100%; border: none; }
+        .footer { position: fixed; bottom: 0; width: 100%; font-size: 7pt; color: #666; border-top: 0.5pt solid #ddd; padding-top: 4pt; }
+        
+        /* Boxes */
+        .info-box { border: 1pt solid #004d80; padding: 8pt; margin-bottom: 10pt; background-color: #f9fbfc; }
+        .formula { font-style: italic; background: #f4f7f9; padding: 8pt; border: 1pt dashed #004d80; margin: 8pt 0; text-align: center; font-size: 9pt; }
+        .res-cumple { background-color: #f6ffed; border: 1pt solid #b7eb8f; color: #52c41a; font-weight: bold; padding: 10pt; text-align: center; }
+        .res-falla { background-color: #fff1f0; border: 1pt solid #ffa39e; color: #f5222d; font-weight: bold; padding: 10pt; text-align: center; }
+        
+        .centered { text-align: center; }
+        .right { text-align: right; }
+        .bold { font-weight: bold; }
+    </style>
+</head>
+<body>
+    <!-- 1. PORTADA -->
+    <table class="no-border">
+        <tr>
+            <td style="width: 50%;">
+                <img src="https://ticosoftcr.com/polykret-dev/wp-content/uploads/2025/08/logoNuevo.png" height="50">
+            </td>
+            <td class="right" style="width: 50%;">
+                <strong style="font-size: 14pt; color: #004d80;">Structural Systems</strong><br>
+                <span>Guayaquil - Ecuador</span>
+            </td>
+        </tr>
+    </table>
+    
+    <h1>Dramix Pro® Slab on Ground</h1>
+    <p class="subtitle">Diseño de Pisos Industriales Reforzados con Fibra Dramix®<br>Memoria de Cálculo Técnica Estándar TR34</p>
+    
+    <div class="info-box">
+        <h3 style="margin-top: 0;">Resumen del Proyecto</h3>
+        <table class="no-border">
+            <tr><td width="30%"><strong>Proyecto:</strong></td><td>{{ data.project_name }}</td></tr>
+            <tr><td><strong>Objeto:</strong></td><td>{{ data.observation or 'Construcción de Piso Industrial' }}</td></tr>
+            <tr><td><strong>Localidad:</strong></td><td>{{ data.location }}</td></tr>
+            <tr><td><strong>Cliente:</strong></td><td>{{ data.client_name }}</td></tr>
+            <tr><td><strong>Contacto:</strong></td><td>{{ data.contact_person }}</td></tr>
+            <tr><td><strong>Email:</strong></td><td>{{ data.email }}</td></tr>
+            <tr><td><strong>Fecha:</strong></td><td>{{ data.date }}</td></tr>
+        </table>
+    </div>
+
+    <div style="margin-top: 15pt;">
+        <h3>Este informe ha sido realizado por:</h3>
+        <table class="no-border">
+            <tr><td width="30%"><strong>Empresa:</strong></td><td>{{ data.company_name }}</td></tr>
+            <tr><td><strong>Responsable:</strong></td><td>{{ data.prepared_by }}</td></tr>
+            <tr><td><strong>E-mail:</strong></td><td>{{ data.designer_email }}</td></tr>
+        </table>
+    </div>
+
+    <div style="margin-top: 30pt;" class="centered">
+        <p><strong>Cálculo basado en Fibra Metálica Dramix®</strong></p>
+        <p style="font-size: 7.5pt; color: #666; width: 80%; margin: auto;">Este cálculo ha sido automatizado siguiendo los estándares de diseño de la nota técnica TR34 4th Edition. Los resultados son válidos exclusivamente para fibras Dramix®.</p>
+    </div>
+
+    <!-- 2. DEFINICIONES -->
+    <div class="page-break">
+        <h2>1. Términos y Definiciones Técnicas</h2>
+        <p>Los parámetros utilizados en esta memoria de cálculo corresponden a la normativa europea y británica para el diseño de secciones de concreto reforzado con fibra (SFRC).</p>
+        <table>
+            <tr><th width="20%">Símbolo</th><th>Definición y Significado</th></tr>
+            <tr><td>f<sub>ck</sub></td><td>Resistencia característica a compresión del concreto (N/mm²).</td></tr>
+            <tr><td>f<sub>ctm,fl</sub></td><td>Resistencia media a tracción por flexión del concreto simple.</td></tr>
+            <tr><td>f<sub>R,3k</sub></td><td>Resistencia residual del concreto con fibra a una apertura de fisura de 2.5mm (CMOD3).</td></tr>
+            <tr><td>k</td><td>Módulo de balasto (N/mm³). Representa la rigidez del suelo de soporte.</td></tr>
+            <tr><td>l<sub>el</sub></td><td>Longitud elástica (mm). Radio de rigidez de la losa.</td></tr>
+            <tr><td>m<sub>Ed</sub></td><td>Momento actuante de diseño incluido el factor de seguridad de carga &gamma;<sub>Q</sub>.</td></tr>
+            <tr><td>m<sub>Rd</sub></td><td>Momento resistente de diseño incluido el factor de seguridad del material &gamma;<sub>C</sub>/&gamma;<sub>F</sub>.</td></tr>
+        </table>
+    </div>
+
+    <!-- 3. DATOS DE ENTRADA -->
+    <div class="page-break">
+        <h2>2. Datos de Entrada del Diseño</h2>
+        <h3>2.1 Propiedades de la Losa y Soporte</h3>
+        <table>
+            <tr><th width="50%">Parámetro Geométrico</th><th>Valor de Diseño</th></tr>
+            <tr><td>Espesor de la Losa (h)</td><td>{{ data.thickness }} mm</td></tr>
+            <tr><td>Distancia Máxima entre Juntas (L)</td><td>{{ data.joint_dist }} m</td></tr>
+            <tr><td>CBR del Suelo (Soporte)</td><td>{{ data.cbr }} %</td></tr>
+            <tr><td><strong>Módulo de Balasto Calibrado (k)</strong></td><td><strong>{{ data.k_val | round(4) }} N/mm³</strong></td></tr>
+        </table>
+
+        <h3>2.2 Especificación de Materiales</h3>
+        <table>
+            <tr><th width="50%">Material</th><th>Especificación Técnica</th></tr>
+            <tr><td>Clase de Concreto (f'c)</td><td>{{ data.fc }} kg/cm² (f<sub>ck</sub> = {{ data.fck }} N/mm²)</td></tr>
+            <tr><td>Módulo de Elasticidad (E<sub>cm</sub>)</td><td>{{ data.ecm }} N/mm²</td></tr>
+            <tr><td>Tipo de Fibra Dramix®</td><td>{{ data.fiber_type or '4D 80/60BGE' }}</td></tr>
+            <tr><td>Dosificación / Consumo</td><td>{{ data.dosage }} kg/m³</td></tr>
+        </table>
+
+        <h3>2.3 Parámetros de Carga</h3>
+        <table>
+            <tr><th width="50%">Variable de Carga</th><th>Magnitud</th></tr>
+            <tr><td>Magnitud de Carga Puntual (F)</td><td>{{ data.load_f }} kN</td></tr>
+            <tr><td>Área de Contacto (Placa)</td><td>{{ data.plate_x }} x {{ data.plate_y }} mm</td></tr>
+            <tr><td>Factor de Mayoración (&gamma;<sub>Q</sub>)</td><td>{{ data.gamma_q }}</td></tr>
+        </table>
+    </div>
+
+    <!-- 4. ANALISIS MECANICO -->
+    <div class="page-break">
+        <h2>3. Análisis Funcional y Mecánico</h2>
+        <p>La capacidad de carga del piso se evalúa considerando la redistribución de esfuerzos permitida por la tenacidad de la fibra Dramix®.</p>
+        
+        <h3>3.1 Longitud Elástica (l<sub>el</sub>)</h3>
+        <p>Se define como la distancia desde la carga hasta el punto donde el momento inducido se reduce significativamente:</p>
+        <div class="formula">l<sub>el</sub> = [ (E &middot; h³) / (12 &middot; (1 - &nu;²) &middot; k) ] <sup>1/4</sup> = <strong>{{ data.lel | round(1) }} mm</strong></div>
+
+        <h3>3.2 Momentos Resistentes (Capacidad)</h3>
+        <table>
+            <tr><th width="50%">Concepto de Resistencia</th><th>Capacidad [kNm/m]</th></tr>
+            <tr><td>Resistencia del Concreto Simple (m<sub>Rd,c</sub>)</td><td>{{ data.m_rd_c }}</td></tr>
+            <tr><td>Resistencia con Fibra Dramix® (m<sub>Rd,f</sub>)</td><td>{{ data.m_rd_f }}</td></tr>
+            <tr><td><strong>Resistencia Total del Sistema (m<sub>Rd,Total</sub>)</strong></td><td><strong>{{ data.m_rd_total }}</strong></td></tr>
+        </table>
+    </div>
+
+    <!-- 5. RESULTADOS MAESTROS -->
+    <div class="page-break">
+        <h2>4. Tabla Maestra de Verificación (TR34)</h2>
+        <p>Comparación de cargas actuantes frente a la capacidad última (P<sub>u</sub>) calculada mediante el método de líneas de fluencia (Yield Line Algorithm):</p>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th style="background-color:#004d80; color:white;">Ubicación de Carga</th>
+                    <th style="background-color:#004d80; color:white;">Carga Act. (P<sub>Ed</sub>)</th>
+                    <th style="background-color:#004d80; color:white;">Capacidad (P<sub>u</sub>)</th>
+                    <th style="background-color:#004d80; color:white;">Utilización %</th>
+                    <th style="background-color:#004d80; color:white;">Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Centro de Losa</strong> (Interior)</td>
+                    <td>{{ (data.load_f * data.gamma_q) | round(1) }} kN</td>
+                    <td>{{ data.p_u_center }} kN</td>
+                    <td>{{ data.utilization }}%</td>
+                    <td style="color:{{ 'green' if data.utilization <= 100 else 'red' }}; font-weight:bold;">
+                        {{ 'CUMPLE' if data.utilization <= 100 else 'FALLA' }}
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>Junta de Contracción</strong></td>
+                    <td>{{ (data.load_f * data.gamma_q) | round(1) }} kN</td>
+                    <td>{{ data.p_u_joint }} kN</td>
+                    <td>{{ data.utilization_joint }}%</td>
+                    <td style="color:{{ 'green' if data.utilization_joint <= 100 else 'red' }}; font-weight:bold;">
+                        {{ 'CUMPLE' if data.utilization_joint <= 100 else 'FALLA' }}
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>Borde Libre</strong> (Perímetro)</td>
+                    <td>{{ (data.load_f * data.gamma_q) | round(1) }} kN</td>
+                    <td>{{ data.p_u_edge }} kN</td>
+                    <td>{{ data.utilization_edge }}%</td>
+                    <td style="color:{{ 'green' if data.utilization_edge <= 100 else 'red' }}; font-weight:bold;">
+                        {{ 'CUMPLE' if data.utilization_edge <= 100 else 'FALLA' }}
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>Esquina de Panel</strong></td>
+                    <td>{{ (data.load_f * data.gamma_q) | round(1) }} kN</td>
+                    <td>{{ data.p_u_corner }} kN</td>
+                    <td>{{ data.utilization_corner }}%</td>
+                    <td style="color:{{ 'green' if data.utilization_corner <= 100 else 'red' }}; font-weight:bold;">
+                        {{ 'CUMPLE' if data.utilization_corner <= 100 else 'FALLA' }}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>4.1 Otros Estados Límite</h3>
+        <table>
+            <tr><th width="30%">Verificación</th><th width="20%">Actuante</th><th width="20%">Capacidad</th><th width="30%">Utilización</th></tr>
+            <tr><td>Punzonamiento</td><td>{{ (data.load_f * data.gamma_q) | round(1) }} kN</td><td>{{ data.v_rd_punch }} kN</td><td>{{ data.utilization_punch }}%</td></tr>
+            {% if data.udl_q > 0 %}
+            <tr><td>Carga UDL ({{ data.udl_q }} kN/m²)</td><td>{{ data.m_ed_udl }} kNm/m</td><td>{{ data.m_rd_c }} kNm/m</td><td>{{ data.utilization_udl }}%</td></tr>
+            {% endif %}
+            {% if data.line_p > 0 %}
+            <tr><td>Carga en Línea ({{ data.line_p }} kN/m)</td><td>{{ data.m_ed_line }} kNm/m</td><td>{{ data.m_rd_c }} kNm/m</td><td>{{ data.utilization_line }}%</td></tr>
+            {% endif %}
+            <tr><td>Presión Suelo</td><td>{{ data.p_ed }} kPa</td><td>-</td><td>-</td></tr>
+        </table>
+
+        <div style="margin-top: 20pt;">
+            {% if data.utilization <= 100 and data.utilization_joint <= 100 and data.utilization_edge <= 100 and data.utilization_corner <= 100 %}
+            <div class="res-cumple">
+                EL DISEÑO CUMPLE CON LOS REQUERIMIENTOS ESTRUCTURALES TR34/EC2
+            </div>
+            {% else %}
+            <div class="res-falla">
+                REDISEÑO REQUERIDO: LA CAPACIDAD ES INSUFICIENTE EN UNA O MÁS POSICIONES
+            </div>
+            {% endif %}
+        </div>
+
+        <div style="margin-top: 20pt; border: 1pt solid #ddd; padding: 10pt;">
+            <h3 style="margin-top: 0; border: none;">Recomendaciones Técnicas</h3>
+            <ul style="list-style: none; padding-left: 0;">
+                {% for rec in data.recommendations %}
+                <li style="margin-bottom: 5pt;">{{ rec }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <!-- 6. RESPONSABILIDAD -->
+    <div class="page-break">
+        <h2>Responsabilidad y Limitaciones Técnicas</h2>
+        <div style="font-size: 7.5pt; text-align: justify; color: #555;">
+            <p>1. Este documento es una asistencia técnica automatizada generada por el motor Polykret V1.0. La aprobación final debe ser realizada por el ingeniero estructural responsable de la obra.</p>
+            <p>2. Los cálculos asumen que la subrasante ha sido compactada al 95% del Proctor Modificado y que el CBR reportado de {{ data.cbr }}% es uniforme en toda el área.</p>
+            <p>3. El mantenimiento de las juntas y el curado del concreto son críticos para el éxito del proyecto y no son responsabilidad del calculista.</p>
+            <p>4. Referencias normativas: TR34 (Technical Report No. 34), Eurocode 2 (EN 1992-1-1), EN 14651.</p>
+        </div>
+        
+        <div style="margin-top: 50pt;" class="centered">
+            <p style="font-size: 10pt; color: #004d80;"><strong>POLY KRET - Sistemas Estructurales</strong></p>
+            <p>Guayaquil, Ecuador | www.polykret.com</p>
+        </div>
+    </div>
+
+    <div class="footer">
+        Dramix Pro® Slab on Ground | Asistencia Técnica Polykret | Reporte Generado el {{ data.date }} a las {{ data.time }}
+    </div>
+</body>
+</html>

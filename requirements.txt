@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+jinja2
+xhtml2pdf
+pydantic
+python-multipart
+reportlab
+html5lib
