@@ -219,16 +219,15 @@
             <div class="input-group">
                 <label>Concrete Grade</label>
                 <select name="fc">
-                    <option value="20">C20/25 (B20)</option>
-                    <option value="25">C25/30 (B25)</option>
-                    <option value="28" selected>C28/35</option>
-                    <option value="30">C30/37 (B30)</option>
-                    <option value="32">C32/40</option>
+                    <option value="210">C17/21 (210 kg/cm²)</option>
+                    <option value="250">C20/25 (250 kg/cm²)</option>
+                    <option value="280" selected>C23/28 (280 kg/cm²)</option>
+                    <option value="350">C28/35 (350 kg/cm²)</option>
                 </select>
             </div>
             <div class="input-group">
-                <label>Slab Thickness (h) [mm]</label>
-                <input type="number" name="thickness" value="200" required>
+                <label>Slab Design Mode</label>
+                <input type="text" value="AUTONOMOUS OPTIMIZATION (Starts @ 150mm)" disabled style="background:#e9ecef; border:1px solid #dee2e6; color:#495057;">
             </div>
         </div>
 
@@ -259,12 +258,19 @@
                     <input type="number" name="load_f" value="77">
                 </div>
                 <div class="input-group">
-                    <label>Base Plate x (mm)</label>
-                    <input type="number" name="plate_x" value="150">
+                    <label>Rack Config</label>
+                    <select name="n_legs">
+                        <option value="1">1x (Single leg)</option>
+                        <option value="2">2x (Back-to-back)</option>
+                        <option value="4">4x (Group load)</option>
+                    </select>
                 </div>
                 <div class="input-group">
-                    <label>Base Plate y (mm)</label>
-                    <input type="number" name="plate_y" value="150">
+                    <label>Base Plate (mm)</label>
+                    <div style="display:flex;gap:5px;">
+                        <input type="number" name="plate_x" value="150" placeholder="x">
+                        <input type="number" name="plate_y" value="150" placeholder="y">
+                    </div>
                 </div>
             </div>
             <div class="grid-3">
@@ -363,14 +369,26 @@
         const data = await resp.json();
 
         summary.innerHTML = `
-            <div class="grid-2">
-                <div>
-                    <p><strong>Espesor Solicitado:</strong> ${data.thickness} mm</p>
-                    <p><strong>Carga Crítica de Diseño:</strong> ${data.load_f} kN (Pallet Rack)</p>
+            <div style="text-align:center; padding:20px; border:2px solid #004d80; border-radius:15px; background:white; margin-bottom:20px;">
+                <h1 style="margin:0; font-size:3rem; color:#004d80;">${data.h} mm</h1>
+                <p style="font-weight:600; text-transform:uppercase; letter-spacing:1px; margin:5px 0;">Espesor Mínimo Recomendado</p>
+                <div style="display:inline-block; padding:5px 15px; background:#ffcc00; border-radius:20px; font-size:0.9rem; font-weight:bold;">
+                    Diseño Optimizado (TR34/Bekaert)
                 </div>
-                <div style="text-align:right">
-                    <p style="font-size:1.5rem; margin:0">Utilización: <span style="color:${data.utilization > 100 ? 'red' : 'green'}">${data.utilization}%</span></p>
-                    <p><strong>Estado:</strong> ${data.utilization > 100 ? 'REDISEÑO' : 'ACEPTADO'}</p>
+            </div>
+            
+            <div class="grid-2">
+                <div class="result-card" style="background:#f8f9fa; border:1px solid #ddd;">
+                    <h3 style="margin-top:0">Ratios de Utilización</h3>
+                    <p>Flexión (Centro): <strong>${data.ratio_flex}</strong></p>
+                    <p>Punzonamiento: <strong>${data.ratio_punch}</strong></p>
+                    <p>Presión Suelo: <strong>${data.ratio_soil}</strong></p>
+                </div>
+                <div class="result-card" style="background:#f8f9fa; border:1px solid #ddd;">
+                    <h3 style="margin-top:0">Detalles Técnicos</h3>
+                    <p>Módulo K: ${data.k_val} N/mm³</p>
+                    <p>Longitud Elástica: ${data.lel} mm</p>
+                    <p>Dosificación: ${data.dosage} kg/m³</p>
                 </div>
             </div>
         `;
