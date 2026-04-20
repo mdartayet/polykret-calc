@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Polykret | Material Calculator (Bekaert Standard)</title>
+    <title>Polykret | Bekaert Floor Design Sheet</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -12,250 +12,375 @@
             --accent: #ffcc00;
             --bg: #f4f7f9;
             --card: #ffffff;
-            --text: #333;
+            --section-bg: #f8f9fa;
         }
 
         body {
             font-family: 'Outfit', sans-serif;
             background-color: var(--bg);
-            color: var(--text);
+            color: #333;
             margin: 0;
             padding: 20px;
         }
 
         .container {
-            max-width: 1000px;
+            max-width: 1100px;
             margin: 0 auto;
             background: var(--card);
-            padding: 40px;
+            padding: 0;
             border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
         }
 
-        header {
-            text-align: center;
-            border-bottom: 2px solid var(--primary);
-            margin-bottom: 30px;
-            padding-bottom: 20px;
+        .header-bar {
+            background: var(--primary);
+            color: white;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
-        header img {
-            max-width: 200px;
+        .header-bar h1 { margin: 0; font-size: 1.5rem; }
+
+        .form-content { padding: 40px; }
+
+        .section-title {
+            background: #6c757d;
+            color: white;
+            padding: 8px 15px;
+            font-weight: 600;
+            margin: 25px 0 15px 0;
+            border-radius: 4px;
+            font-size: 0.95rem;
+            text-transform: uppercase;
         }
 
-        h1 { color: var(--primary); margin: 10px 0 5px; font-weight: 600; }
-        h2 { color: var(--secondary); font-size: 1.2rem; border-left: 4px solid var(--primary); padding-left: 10px; margin-top: 30px; }
-
-        .form-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
 
         .input-group { margin-bottom: 15px; }
-        label { display: block; font-weight: 600; margin-bottom: 5px; font-size: 0.9rem; }
-        input, select {
+        label { display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 5px; color: #555; }
+        input, select, textarea {
             width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-size: 1rem;
+            padding: 8px 12px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 0.9rem;
             box-sizing: border-box;
         }
 
-        .rack-grid {
-            background: #fdfdfd;
-            padding: 15px;
-            border: 1px dashed #ccc;
+        input:focus { border-color: var(--secondary); outline: none; }
+
+        .load-box {
+            border: 1px solid #ddd;
+            padding: 20px;
             border-radius: 8px;
-            margin-top: 10px;
+            background: var(--section-bg);
+            margin-bottom: 20px;
         }
 
-        button {
-            width: 100%;
-            padding: 15px;
-            background: var(--primary);
-            color: white;
+        .load-box h3 {
+            margin-top: 0;
+            font-size: 1rem;
+            color: var(--primary);
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 10px;
+        }
+
+        .unit-select {
+            background: #eee;
+            width: auto;
+            border-left: none;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .input-with-unit { display: flex; }
+        .input-with-unit input { border-radius: 4px 0 0 4px; }
+
+        button.submit-btn {
+            background: var(--accent);
+            color: #000;
             border: none;
-            border-radius: 8px;
-            font-size: 1.1rem;
+            padding: 18px;
+            width: 100%;
+            font-size: 1.2rem;
             font-weight: 600;
             cursor: pointer;
-            transition: background 0.3s;
+            border-radius: 8px;
             margin-top: 30px;
+            transition: transform 0.2s;
         }
 
-        button:hover { background: var(--secondary); }
+        button.submit-btn:hover { transform: translateY(-2px); background: #e6b800; }
 
         #results {
-            margin-top: 40px;
-            padding: 25px;
-            background: #eef6fc;
-            border-radius: 10px;
             display: none;
+            padding: 30px;
+            background: #fff;
+            border-top: 5px solid var(--secondary);
+            margin-top: 20px;
         }
 
-        .util-tag {
-            display: inline-block;
-            padding: 4px 10px;
-            border-radius: 4px;
-            font-weight: bold;
-            font-size: 0.85rem;
-        }
-        .util-ok { background: #d4edda; color: #155724; }
-        .util-fail { background: #f8d7da; color: #721c24; }
-
-        .footer {
-            text-align: center;
-            margin-top: 50px;
-            font-size: 0.8rem;
-            color: #888;
+        .result-card {
+            background: #eef6fc;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <header>
-        <h1>POLY KRET</h1>
-        <p>Industrial Floor Design Assistance (TR34 Compliant)</p>
-    </header>
+    <div class="header-bar">
+        <div>
+            <h1>Floor Design Sheet</h1>
+            <span style="opacity: 0.8; font-size: 0.8rem;">Dramix® | Bekaert Compliant</span>
+        </div>
+        <div style="text-align: right;">
+            <div style="font-weight: bold;">POLY KRET</div>
+            <div style="font-size: 0.7rem;">Technical Assistance Tool</div>
+        </div>
+    </div>
 
-    <form id="calcForm">
-        <h2>Información del Proyecto</h2>
-        <div class="form-grid">
+    <form id="masterForm" class="form-content">
+        <!-- PROJECT INFO -->
+        <div class="section-title">Project Information</div>
+        <div class="grid-2">
             <div class="input-group">
-                <label>Proyecto</label>
-                <input type="text" name="project_name" value="PROMART Guayaquil">
+                <label>Project Name</label>
+                <input type="text" name="project_name" placeholder="e.g. PROMART Guayaquil">
             </div>
             <div class="input-group">
-                <label>Cliente</label>
-                <input type="text" name="client_name" value="Industrial Client">
+                <label>Project Size (m²)</label>
+                <input type="number" name="project_size">
+            </div>
+        </div>
+        <div class="grid-3">
+            <div class="input-group">
+                <label>Customer Name</label>
+                <input type="text" name="client_name">
+            </div>
+            <div class="input-group">
+                <label>E-mail</label>
+                <input type="email" name="email">
+            </div>
+            <div class="input-group">
+                <label>Telephone Number</label>
+                <input type="text" name="phone">
             </div>
         </div>
 
-        <h2>Parámetros de Diseño (Floor Information)</h2>
-        <div class="form-grid">
+        <!-- FLOOR INFO -->
+        <div class="section-title">Floor Information</div>
+        <div class="grid-3">
             <div class="input-group">
-                <label>Espesor de Losa (h) [mm]</label>
-                <input type="number" name="thickness" value="200" required>
-            </div>
-            <div class="input-group">
-                <label>Resistencia Concreto (f'c) [kg/cm²]</label>
-                <select name="fc">
-                    <option value="210">C17/21 (210 kg/cm²)</option>
-                    <option value="240">C20/24 (240 kg/cm²)</option>
-                    <option value="280" selected>C23/28 (280 kg/cm²)</option>
-                    <option value="350">C28/35 (350 kg/cm²)</option>
+                <label>Floor Type</label>
+                <select name="floor_type">
+                    <option value="Internal">Internal</option>
+                    <option value="External">External</option>
                 </select>
             </div>
             <div class="input-group">
-                <label>Suelo (CBR) [%]</label>
-                <input type="number" name="cbr" value="30" step="0.1" required>
+                <label>Joint Type</label>
+                <select name="joint_type">
+                    <option value="Saw cut">Saw cut</option>
+                    <option value="Jointless">Jointless</option>
+                </select>
             </div>
             <div class="input-group">
-                <label>Espaciamiento Juntas (LxW) [m]</label>
+                <label>Joint Spacing (m)</label>
                 <input type="text" name="joint_spacing" value="4.0 x 4.0">
             </div>
         </div>
 
-        <h2>Refuerzo con Fibra Dramix®</h2>
-        <div class="form-grid">
+        <!-- SUBBASE -->
+        <div class="section-title">Subbase (Soil)</div>
+        <div class="grid-3">
             <div class="input-group">
-                <label>Tipo de Fibra</label>
-                <select name="fiber_type">
-                    <option value="4D 80/60BGE">Dramix® 4D 80/60BGE (Optimized)</option>
-                    <option value="3D 80/60BG">Dramix® 3D 80/60BG</option>
-                    <option value="5D 65/60BG">Dramix® 5D 65/60BG</option>
+                <label>CBR (%)</label>
+                <input type="number" name="cbr" value="30" step="0.1">
+            </div>
+            <div class="input-group">
+                <label>k-value (N/mm³)</label>
+                <input type="number" name="k_val" placeholder="Auto-calculated if empty" step="0.0001">
+            </div>
+            <div class="input-group">
+                <label>Plate Test (EV2) [MN/m²]</label>
+                <input type="number" name="ev2" placeholder="Optional">
+            </div>
+        </div>
+
+        <!-- CONCRETE -->
+        <div class="section-title">Concrete Class</div>
+        <div class="grid-2">
+            <div class="input-group">
+                <label>Concrete Grade</label>
+                <select name="fc">
+                    <option value="20">C20/25 (B20)</option>
+                    <option value="25">C25/30 (B25)</option>
+                    <option value="28" selected>C28/35</option>
+                    <option value="30">C30/37 (B30)</option>
+                    <option value="32">C32/40</option>
                 </select>
             </div>
             <div class="input-group">
-                <label>Dosificación [kg/m³]</label>
-                <input type="number" name="dosage" value="22" step="0.5" required>
+                <label>Slab Thickness (h) [mm]</label>
+                <input type="number" name="thickness" value="200" required>
             </div>
         </div>
 
-        <h2>Cargas (Pallet Racking)</h2>
-        <div class="rack-grid">
-            <div class="form-grid">
+        <!-- REINFORCEMENT -->
+        <div class="section-title">Reinforcement (Fiber specification)</div>
+        <div class="grid-2">
+            <div class="input-group">
+                <label>Fiber Type</label>
+                <select name="fiber_type">
+                    <option value="4D 80/60BGE">Dramix® 4D 80/60BGE</option>
+                    <option value="3D 80/60BG">Dramix® 3D 80/60BG</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>Dosage (kg/m³)</label>
+                <input type="number" name="dosage" value="22" step="0.5">
+            </div>
+        </div>
+
+        <div class="section-title">Loads Specification</div>
+        
+        <!-- PALLET RACKING -->
+        <div class="load-box">
+            <h3>Pallet Racking</h3>
+            <div class="grid-3">
                 <div class="input-group">
-                    <label>Carga por Pata (Single Leg) [kN]</label>
-                    <input type="number" name="load_f" value="77" required>
+                    <label>Single Leg Load (kN)</label>
+                    <input type="number" name="load_f" value="77">
                 </div>
                 <div class="input-group">
-                    <label>Placa Base (a x b) [mm]</label>
-                    <div style="display:flex;gap:5px;">
-                        <input type="number" name="plate_x" value="150">
-                        <input type="number" name="plate_y" value="150">
-                    </div>
+                    <label>Base Plate x (mm)</label>
+                    <input type="number" name="plate_x" value="150">
+                </div>
+                <div class="input-group">
+                    <label>Base Plate y (mm)</label>
+                    <input type="number" name="plate_y" value="150">
+                </div>
+            </div>
+            <div class="grid-3">
+                <div class="input-group">
+                    <label>Back-to-back (z-z) [mm]</label>
+                    <input type="number" name="rack_z" value="300">
+                </div>
+                <div class="input-group">
+                    <label>Rack Depth (x-x) [mm]</label>
+                    <input type="number" name="rack_x" value="1200">
+                </div>
+                <div class="input-group">
+                    <label>Aisle Width [mm]</label>
+                    <input type="number" name="aisle_w" value="3000">
                 </div>
             </div>
         </div>
 
-        <button type="submit">Calcular y Generar Resultados</button>
+        <!-- VEHICLES -->
+        <div class="grid-2">
+            <div class="load-box">
+                <h3>Fork Lift</h3>
+                <div class="input-group">
+                    <label>Max Wheel Load (kN)</label>
+                    <input type="number" name="fl_wheel_load" value="0">
+                </div>
+                <div class="input-group">
+                    <label>Contact Pressure (N/mm²)</label>
+                    <input type="number" name="fl_pressure" value="0" step="0.1">
+                </div>
+            </div>
+            <div class="load-box">
+                <h3>Trucks</h3>
+                <div class="input-group">
+                    <label>Max Wheel Load (kN)</label>
+                    <input type="number" name="tr_wheel_load" value="0">
+                </div>
+                <div class="input-group">
+                    <label>Contact Pressure (N/mm²)</label>
+                    <input type="number" name="tr_pressure" value="0" step="0.1">
+                </div>
+            </div>
+        </div>
+
+        <!-- OTHERS -->
+        <div class="grid-2">
+            <div class="load-box">
+                <h3>UDLs (Uniform Loads)</h3>
+                <div class="input-group">
+                    <label>Load (kN/m²)</label>
+                    <input type="number" name="udl_q" value="0">
+                </div>
+            </div>
+            <div class="load-box">
+                <h3>Line Loads</h3>
+                <div class="input-group">
+                    <label>Load (kN/m)</label>
+                    <input type="number" name="line_p" value="0">
+                </div>
+                <div class="input-group">
+                    <label>Width (x) [mm]</label>
+                    <input type="number" name="line_w" value="100">
+                </div>
+            </div>
+        </div>
+
+        <button type="submit" class="submit-btn">Calcular y Generar Memoria Técnica</button>
     </form>
 
     <div id="results">
-        <h2 style="margin-top:0">Resultados del Análisis</h2>
-        <div id="resultsContent"></div>
-        <form action="/generate-pdf" method="POST" id="pdfForm" style="margin-top:20px;">
-            <!-- Hidden inputs will be filled by JS -->
-            <div id="hiddenInputs"></div>
-            <button type="submit" style="background:#28a745">Descargar Memoria Técnica PDF</button>
+        <div class="result-card">
+            <h2 style="margin-top:0; color: var(--primary);">Análisis Estructural Terminado</h2>
+            <div id="resultsSummary"></div>
+        </div>
+        <form action="/generate-pdf" method="POST" id="pdfForm">
+            <div id="hiddenParams"></div>
+            <button type="submit" style="background:#28a745; color:white; border:none; padding:15px; width:100%; border-radius:8px; cursor:pointer; font-weight:600;">Descargar Memoria Completa (PDF)</button>
         </form>
     </div>
 
-    <div class="footer">
-        © 2026 Polykret | Basado en Estándares TR34 y Bekaert SoG | Solo para uso profesional.
+    <div style="padding: 20px; text-align: center; color: #888; font-size: 0.75rem;">
+        Este servicio está destinado exclusivamente para diseño preliminar con fibras Dramix®.
     </div>
 </div>
 
 <script>
-    const form = document.getElementById('calcForm');
-    const resultsDiv = document.getElementById('results');
-    const resultsContent = document.getElementById('resultsContent');
-    const hiddenInputs = document.getElementById('hiddenInputs');
+    const form = document.getElementById('masterForm');
+    const results = document.getElementById('results');
+    const summary = document.getElementById('resultsSummary');
+    const hidden = document.getElementById('hiddenParams');
 
     form.onsubmit = async (e) => {
         e.preventDefault();
-        const formData = new FormData(form);
-        const response = await fetch('/calculate', {
-            method: 'POST',
-            body: formData
-        });
-        const data = await response.json();
+        const fd = new FormData(form);
+        const resp = await fetch('/calculate', { method: 'POST', body: fd });
+        const data = await resp.json();
 
-        resultsContent.innerHTML = `
-            <div class="form-grid">
+        summary.innerHTML = `
+            <div class="grid-2">
                 <div>
-                    <p><strong>Módulo K (Suelo):</strong> ${data.k_val} N/mm³</p>
-                    <p><strong>Longitud Elástica:</strong> ${data.lel} mm</p>
+                    <p><strong>Espesor Solicitado:</strong> ${data.thickness} mm</p>
+                    <p><strong>Carga Crítica de Diseño:</strong> ${data.load_f} kN (Pallet Rack)</p>
                 </div>
-                <div>
-                    <p><strong>Pu Centro (ULS):</strong> ${data.m_rd_total} kNm/m</p>
-                    <p><strong>Pu Fisuración:</strong> ${data.m_rd_c} kNm/m</p>
+                <div style="text-align:right">
+                    <p style="font-size:1.5rem; margin:0">Utilización: <span style="color:${data.utilization > 100 ? 'red' : 'green'}">${data.utilization}%</span></p>
+                    <p><strong>Estado:</strong> ${data.utilization > 100 ? 'REDISEÑO' : 'ACEPTADO'}</p>
                 </div>
             </div>
-            <h3>Verificaciones de Utilización</h3>
-            <table style="width:100%; text-align:left; border-collapse:collapse;">
-                <tr style="border-bottom:1px solid #ccc"><th>Posición</th><th>Momento (kNm/m)</th><th>Utilización</th></tr>
-                <tr><td>Centro</td><td>${data.m_ed_center}</td><td><span class="util-tag ${data.utilization <= 100 ? 'util-ok' : 'util-fail'}">${data.utilization}%</span></td></tr>
-                <tr><td>Juntas</td><td>${data.m_ed_joint}</td><td><span class="util-tag ${data.utilization_joint <= 100 ? 'util-ok' : 'util-fail'}">${data.utilization_joint}%</span></td></tr>
-                <tr><td>Bordes</td><td>${data.m_ed_edge}</td><td><span class="util-tag ${data.utilization_edge <= 100 ? 'util-ok' : 'util-fail'}">${data.utilization_edge}%</span></td></tr>
-                <tr><td>Suelo</td><td>${data.p_ed_soil} kN/m²</td><td><span class="util-tag ${data.utilization_soil <= 100 ? 'util-ok' : 'util-fail'}">${data.utilization_soil}%</span></td></tr>
-            </table>
         `;
-        
-        resultsDiv.style.display = 'block';
+        results.style.display = 'block';
 
-        // Prepare PDF form
-        hiddenInputs.innerHTML = '';
-        for (let pair of formData.entries()) {
-            const input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = pair[0];
-            input.value = pair[1];
-            hiddenInputs.appendChild(input);
+        hidden.innerHTML = '';
+        for (let [k, v] of fd.entries()) {
+            const inp = document.createElement('input');
+            inp.type = 'hidden'; inp.name = k; inp.value = v;
+            hidden.appendChild(inp);
         }
     };
 </script>
