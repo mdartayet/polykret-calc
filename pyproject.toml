@@ -1,0 +1,14 @@
+[project]
+name = "polykret-calc"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi",
+    "uvicorn",
+    "jinja2",
+    "xhtml2pdf==0.2.11",
+    "pydantic",
+    "python-multipart",
+    "reportlab==3.6.12",
+    "html5lib"
+]

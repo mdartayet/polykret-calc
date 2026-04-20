@@ -1,8 +1,6 @@
 fastapi
 uvicorn
 jinja2
-xhtml2pdf[renderpm]
+xhtml2pdf==0.2.11
 pydantic
 python-multipart
-# Evitar svglib pesado
-svglib==1.5.1

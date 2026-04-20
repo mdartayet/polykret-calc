@@ -11,3 +11,5 @@ ENV/
 node_modules/
 *.pdf
 sources/
+
+.vercel
