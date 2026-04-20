@@ -17,10 +17,10 @@ from pdf_gen import render_pdf
 
 app = FastAPI(title="Polykret Material Calculator")
 
-# Configurar estáticos y templates
-base_dir = os.path.dirname(os.path.abspath(__file__))
-static_dir = os.path.join(base_dir, "static")
-templates_dir = os.path.join(base_dir, "templates")
+# Configurar estáticos y templates (ubicados en la raíz)
+root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+static_dir = os.path.join(root_dir, "static")
+templates_dir = os.path.join(root_dir, "templates")
 
 app.mount("/static", StaticFiles(directory=static_dir), name="static")
 templates = Jinja2Templates(directory=templates_dir)
