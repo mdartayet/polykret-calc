@@ -369,6 +369,11 @@
         const data = await resp.json();
 
         summary.innerHTML = `
+            ${data.technical_alert ? `
+                <div style="background:#fff3cd; color:#856404; padding:15px; border:1px solid #ffeeba; border-radius:8px; margin-bottom:20px; font-weight:bold; border-left:5px solid #ffc107;">
+                    ⚠️ ${data.technical_alert}
+                </div>
+            ` : ''}
             <div style="text-align:center; padding:20px; border:2px solid #004d80; border-radius:15px; background:white; margin-bottom:20px;">
                 <h1 style="margin:0; font-size:3rem; color:#004d80;">${data.h} mm</h1>
                 <p style="font-weight:600; text-transform:uppercase; letter-spacing:1px; margin:5px 0;">Espesor Mínimo Recomendado</p>

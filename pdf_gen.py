@@ -27,6 +27,15 @@ def render_pdf(data):
     pdf.cell(0, 15, f" ESPESOR RECOMENDADO: {data['h']} mm", 1, 1, 'C', True)
     pdf.ln(5)
 
+    # ALERTA TÉCNICA (SI EXISTE)
+    if data.get('technical_alert'):
+        pdf.set_fill_color(255, 243, 205)
+        pdf.set_text_color(133, 100, 4)
+        pdf.set_font('Arial', 'B', 9)
+        pdf.multi_cell(0, 8, f" EXCEPCIÓN: {data['technical_alert']}", 1, 'L', True)
+        pdf.set_text_color(0, 0, 0)
+        pdf.ln(5)
+
     # 2. DATOS PROYECTO
     pdf.set_fill_color(240, 240, 240)
     pdf.set_font('Arial', 'B', 11)
