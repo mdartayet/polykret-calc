@@ -31,10 +31,14 @@ engine = PolykretEngine()
 async def read_root(request: Request):
     if templates:
         try:
-            return templates.TemplateResponse("index.html", {"request": request})
+            return templates.TemplateResponse(
+                request=request, 
+                name="index.html", 
+                context={"request": request}
+            )
         except Exception as e:
-            return f"<h1>Error de Plantilla</h1><p>{str(e)}</p><p>Buscando en: {templates_dir}</p>"
-    return "<h1>Polykret API Activa</h1><p>La carpeta de plantillas no fue encontrada.</p>"
+            return f"<h1>Error de Sistema</h1><p>{str(e)}</p>"
+    return "<h1>Polykret API Activa</h1>"
 
 def perform_calculations(data: dict):
     # Parámetros básicos con defaults
