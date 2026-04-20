@@ -4,32 +4,37 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from datetime import datetime
 import os
-
-# Importar lógica personalizada
-import os
 import sys
 
-# Asegurar que el directorio actual esté en el path para despliegue
-sys.path.append(os.path.dirname(__file__))
-
+# Importar lógica personalizada
 from engine import PolykretEngine
 from pdf_gen import render_pdf
 
 app = FastAPI(title="Polykret Material Calculator")
 
-# Configurar estáticos y templates (ubicados al mismo nivel)
+# Configurar rutas absolutas seguras
 base_dir = os.path.dirname(os.path.abspath(__file__))
 static_dir = os.path.join(base_dir, "static")
 templates_dir = os.path.join(base_dir, "templates")
 
-app.mount("/static", StaticFiles(directory=static_dir), name="static")
-templates = Jinja2Templates(directory=templates_dir)
+# Intentar montar si existen
+if os.path.exists(static_dir):
+    app.mount("/static", StaticFiles(directory=static_dir), name="static")
+
+templates = None
+if os.path.exists(templates_dir):
+    templates = Jinja2Templates(directory=templates_dir)
 
 engine = PolykretEngine()
 
 @app.get("/", response_class=HTMLResponse)
 async def read_root(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
+    if templates:
+        try:
+            return templates.TemplateResponse("index.html", {"request": request})
+        except Exception as e:
+            return f"<h1>Error de Plantilla</h1><p>{str(e)}</p><p>Buscando en: {templates_dir}</p>"
+    return "<h1>Polykret API Activa</h1><p>La carpeta de plantillas no fue encontrada.</p>"
 
 def perform_calculations(data: dict):
     # Parámetros básicos con defaults
@@ -39,21 +44,13 @@ def perform_calculations(data: dict):
     fiber_type = data.get('fiber_type', 'Dramix 4D 80/60BGE')
     dosage = data.get('dosage', 22.0)
     
-    # 1. Ejecutar Motor de Cálculo
     k = engine.calculate_subgrade_modulus(cbr)
     conc = engine.calculate_concrete_properties(fc)
     lel = engine.calculate_elastic_length(thickness, conc["ecm"], k)
-    
-    # Props de fibras dinámicas
     fiber_props = engine.calculate_fiber_properties(fiber_type, dosage)
-    
-    # Refuerzo (opcional)
     reinforcement = {"as": data.get("as_area", 0)}
-    
-    # Calcular resistencias
     m_res = engine.calculate_moment_resistance(thickness, conc, fiber_props=fiber_props, reinforcement=reinforcement)
     
-    # Verificar cargas en múltiples posiciones
     v_loads = engine.verify_loads(
         data.get('load_f', 0), data.get('plate_x', 150), data.get('plate_y', 150), thickness, lel, 
         m_rd_f=m_res['m_rd_f'], 
@@ -63,7 +60,6 @@ def perform_calculations(data: dict):
         fck=conc['fck']
     )
     
-    # Verificaciones adicionales si existen
     if data.get("udl_q"):
         udl_res = engine.verify_udl(data["udl_q"], data.get("udl_w", 4.0), thickness, lel, m_res["m_rd_c"])
         v_loads.update(udl_res)
@@ -72,7 +68,6 @@ def perform_calculations(data: dict):
         line_res = engine.verify_line_load(data["line_p"], thickness, lel, m_res["m_rd_c"])
         v_loads.update(line_res)
     
-    # Generar Recomendaciones
     recommendations = engine.generate_recommendations(v_loads)
     
     return {
@@ -121,17 +116,9 @@ async def calculate(
     as_area: float = Form(0)
 ):
     data = {
-        "thickness": thickness,
-        "cbr": cbr,
-        "fc": fc,
-        "fiber_type": fiber_type,
-        "dosage": dosage,
-        "load_f": load_f,
-        "plate_x": plate_x,
-        "plate_y": plate_y,
-        "udl_q": udl_q,
-        "line_p": line_p,
-        "as_area": as_area
+        "thickness": thickness, "cbr": cbr, "fc": fc, "fiber_type": fiber_type,
+        "dosage": dosage, "load_f": load_f, "plate_x": plate_x, "plate_y": plate_y,
+        "udl_q": udl_q, "line_p": line_p, "as_area": as_area
     }
     return perform_calculations(data)
 
@@ -140,19 +127,11 @@ async def generate_pdf(
     thickness: int = Form(...),
     cbr: int = Form(...),
     fc: int = Form(...),
-    fiber_type: str = Form("Dramix 4D 80/60BGE"),
     dosage: float = Form(...),
+    fiber_type: str = Form("Dramix 4D 80/60BGE"),
     project_name: str = Form("Reporte Técnico Polykret"),
     client_name: str = Form("Instalación Industrial"),
     location: str = Form("Ecuador"),
-    contact_person: str = Form("N/A"),
-    email: str = Form("N/A"),
-    phone: str = Form("N/A"),
-    observation: str = Form(""),
-    prepared_by: str = Form("Melanie Naranjo"),
-    company_name: str = Form("IdealAlambrec Bekaert"),
-    designer_email: str = Form("Melanie.Naranjo@bekaert.com"),
-    joint_dist: float = Form(4.0),
     load_f: float = Form(0),
     plate_x: int = Form(150),
     plate_y: int = Form(150),
@@ -161,50 +140,21 @@ async def generate_pdf(
     as_area: float = Form(0)
 ):
     input_data = {
-        "thickness": thickness,
-        "cbr": cbr,
-        "fc": fc,
-        "fiber_type": fiber_type,
-        "dosage": dosage,
-        "project_name": project_name,
-        "client_name": client_name,
-        "location": location,
-        "contact_person": contact_person,
-        "email": email,
-        "phone": phone,
-        "observation": observation,
-        "prepared_by": prepared_by,
-        "company_name": company_name,
-        "designer_email": designer_email,
-        "joint_dist": joint_dist,
-        "load_f": load_f,
-        "plate_x": plate_x,
-        "plate_y": plate_y,
-        "udl_q": udl_q,
-        "line_p": line_p,
-        "as_area": as_area
+        "thickness": thickness, "cbr": cbr, "fc": fc, "fiber_type": fiber_type,
+        "dosage": dosage, "project_name": project_name, "client_name": client_name,
+        "location": location, "load_f": load_f, "plate_x": plate_x, "plate_y": plate_y,
+        "udl_q": udl_q, "line_p": line_p, "as_area": as_area
     }
-    
-    # 1. Ejecutar Motor de Cálculo
     pdf_params = perform_calculations(input_data)
-    
-    # 2. Generar PDF
     pdf_content = render_pdf(pdf_params)
     
-    if not pdf_content:
-        return Response(content="Error generando PDF", status_code=500)
-    
-    # Limpiar nombre de archivo
     safe_client = "".join([c for c in client_name if c.isalnum() or c in (' ', '_')]).strip().replace(' ', '_')
     filename = f"Memoria_Polykret_{safe_client}.pdf"
     
     return Response(
-        content=pdf_content,
+        content=bytes(pdf_content),
         media_type="application/pdf",
-        headers={
-            "Content-Disposition": f"attachment; filename={filename}",
-            "Access-Control-Expose-Headers": "Content-Disposition"
-        }
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
     )
 
 if __name__ == "__main__":
