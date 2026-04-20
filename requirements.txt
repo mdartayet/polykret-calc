@@ -1,8 +1,8 @@
 fastapi
 uvicorn
 jinja2
-xhtml2pdf
+xhtml2pdf[renderpm]
 pydantic
 python-multipart
-reportlab
-html5lib
+# Evitar svglib pesado
+svglib==1.5.1
