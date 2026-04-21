@@ -25,54 +25,71 @@ async def read_root(request: Request):
     content = templates.get_template("index.html").render({"request": request})
     return HTMLResponse(content=content)
 
-def perform_optimization_logic(data: dict):
-    # Parámetros de Suelo y Material
-    cbr = float(data.get('cbr', 30))
-    fc = float(data.get('fc', 280)) # f'c en kg/cm2
-    dosage = float(data.get('dosage', 22))
-    fiber_type = data.get('fiber_type', '4D 80/60BGE')
-    
-    # Cargas
-    load_params = {
-        'load_f': float(data.get('load_f', 77) or 0),
-        'plate_x': float(data.get('plate_x', 150) or 150),
-        'plate_y': float(data.get('plate_y', 150) or 150),
-        'n_legs': int(data.get('n_legs', 1))
-    }
+async def get_request_data(request: Request):
+    """Detecta automáticamente si la entrada es JSON o Form-Data"""
+    content_type = request.headers.get("content-type", "")
+    if "application/json" in content_type:
+        return await request.json()
+    else:
+        form_data = await request.form()
+        return dict(form_data)
 
-    # EJECUTAR LOOP DE OPTIMIZACIÓN
-    results = engine.optimize_thickness(cbr, fc, dosage, fiber_type, load_params)
-    
-    results.update({
-        "date": datetime.now().strftime("%d/%m/%Y"),
-        "time": datetime.now().strftime("%H:%M"),
-        "project_name": data.get('project_name', 'Unnamed Project'),
-        "client_name": data.get('client_name', 'Unnamed Client'),
-        "dosage": dosage,
-        "load_f": load_params['load_f']
-    })
-    
-    return results
+def perform_optimization_logic(data: dict):
+    # Sanitizar y asegurar tipos
+    try:
+        cbr = float(data.get('cbr', 30))
+        fc = float(data.get('fc', 280))
+        dosage = float(data.get('dosage', 22))
+        fiber_type = data.get('fiber_type', '4D 80/60BGE')
+        
+        load_params = {
+            'load_f': float(data.get('load_f', 77) or 0),
+            'plate_x': float(data.get('plate_x', 150) or 150),
+            'plate_y': float(data.get('plate_y', 150) or 150),
+            'rack_z': float(data.get('rack_z', 300) or 300),
+            'rack_x': float(data.get('rack_x', 1200) or 1200),
+            'n_legs': int(data.get('n_legs', 1))
+        }
+
+        results = engine.optimize_thickness(cbr, fc, dosage, fiber_type, load_params)
+        
+        results.update({
+            "date": datetime.now().strftime("%d/%m/%Y"),
+            "time": datetime.now().strftime("%H:%M"),
+            "project_name": data.get('project_name', 'Unnamed Project'),
+            "client_name": data.get('client_name', 'Unnamed Client'),
+            "dosage": dosage,
+            "load_f": load_params['load_f']
+        })
+        return results
+    except Exception as e:
+        return {"error": str(e), "msg": "Error en el procesamiento de datos de entrada."}
 
 @app.post("/calculate")
 async def calculate(request: Request):
-    form_data = await request.form()
-    return perform_optimization_logic(dict(form_data))
+    data = await get_request_data(request)
+    return perform_optimization_logic(data)
 
 @app.post("/generate-pdf")
 async def generate_pdf(request: Request):
-    form_data = await request.form()
-    data = dict(form_data)
+    data = await get_request_data(request)
     
     optimized_results = perform_optimization_logic(data)
+    if "error" in optimized_results:
+        return Response(content=optimized_results["error"], status_code=400)
+        
     pdf_content = render_pdf(optimized_results)
     
-    filename = f"Memoria_Optimizada_{optimized_results['project_name'].replace(' ', '_')}.pdf"
+    project = str(optimized_results.get('project_name', 'Report')).replace(' ', '_')
+    filename = f"Memoria_Polykret_{project}.pdf"
     
     return Response(
         content=bytes(pdf_content),
         media_type="application/pdf",
-        headers={"Content-Disposition": f"attachment; filename={filename}"}
+        headers={
+            "Content-Disposition": f"attachment; filename={filename}",
+            "Access-Control-Expose-Headers": "Content-Disposition"
+        }
     )
 
 if __name__ == "__main__":
