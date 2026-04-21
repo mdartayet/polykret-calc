@@ -34,24 +34,32 @@ async def get_request_data(request: Request):
         form_data = await request.form()
         return dict(form_data)
 
+def safe_float(val, default=0.0):
+    """Convierte a float de forma segura manejando strings, comillas y vacíos"""
+    try:
+        if val is None or str(val).strip() == "" or str(val).strip() == "null":
+            return default
+        return float(str(val).replace(',', '.'))
+    except:
+        return default
+
 def perform_full_optimization(data: dict):
     try:
-        # Solo necesitamos Suelo, Concreto y Carga
-        cbr = float(data.get('cbr', 30))
-        fc = float(data.get('fc', 280))
+        # Conversión ultra-segura de tipos (Soporta comillas del bot)
+        cbr = safe_float(data.get('cbr'), 30.0)
+        fc = safe_float(data.get('fc'), 280.0)
         
         load_params = {
-            'load_f': float(data.get('load_f', 0) or 0),
-            'plate_x': float(data.get('plate_x', 150) or 150),
-            'plate_y': float(data.get('plate_y', 150) or 150),
-            'n_legs': int(data.get('n_legs', 1) or 1),
-            'fl_wheel_load': float(data.get('fl_wheel_load', 0) or 0),
-            'fl_pressure': float(data.get('fl_pressure', 2.0) or 2.0),
-            'tr_wheel_load': float(data.get('tr_wheel_load', 0) or 0),
-            'tr_pressure': float(data.get('tr_pressure', 0.8) or 0.8)
+            'load_f': safe_float(data.get('load_f'), 0.0),
+            'plate_x': safe_float(data.get('plate_x'), 150.0),
+            'plate_y': safe_float(data.get('plate_y'), 150.0),
+            'n_legs': int(safe_float(data.get('n_legs'), 1.0)),
+            'fl_wheel_load': safe_float(data.get('fl_wheel_load'), 0.0),
+            'fl_pressure': safe_float(data.get('fl_pressure'), 2.0),
+            'tr_wheel_load': safe_float(data.get('tr_wheel_load'), 0.0),
+            'tr_pressure': safe_float(data.get('tr_pressure'), 0.8)
         }
 
-        # La magia ocurre aquí: Diseño Total
         results = engine.total_optimization(cbr, fc, load_params)
         
         if "error" in results:
@@ -60,8 +68,8 @@ def perform_full_optimization(data: dict):
         results.update({
             "date": datetime.now().strftime("%d/%m/%Y"),
             "time": datetime.now().strftime("%H:%M"),
-            "project_name": data.get('project_name', 'Unnamed Project'),
-            "client_name": data.get('client_name', 'Unnamed Client'),
+            "project_name": str(data.get('project_name', 'Unnamed Project')),
+            "client_name": str(data.get('client_name', 'Unnamed Client')),
             "load_f": load_params['load_f']
         })
         return results
@@ -79,18 +87,22 @@ async def generate_pdf(request: Request):
         data = dict(request.query_params)
     else:
         data = await get_request_data(request)
+    
     optimized = perform_full_optimization(data)
     
     if "error" in optimized and not optimized.get('h'):
         return Response(content=optimized["error"], status_code=400)
         
     pdf_content = render_pdf(optimized)
-    filename = f"Propuesta_Polykret_{optimized.get('project_name','Recibido').replace(' ', '_')}.pdf"
+    filename = f"Propuesta_Polykret_{str(optimized.get('project_name','Report')).replace(' ', '_')}.pdf"
     
     return Response(
         content=bytes(pdf_content),
         media_type="application/pdf",
-        headers={"Content-Disposition": f"attachment; filename={filename}"}
+        headers={
+            "Content-Disposition": f"attachment; filename={filename}",
+            "Access-Control-Expose-Headers": "Content-Disposition"
+        }
     )
 
 if __name__ == "__main__":
