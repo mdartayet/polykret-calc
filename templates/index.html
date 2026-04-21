@@ -387,9 +387,22 @@
                 <div class="result-card" style="background:#f8f9fa; border:1px solid #ddd;">
                     <h3 style="margin-top:0">Especificaciones Técnicas</h3>
                     <p>Carga Crítica: <strong style="color:#004d80;">${data.critical_load}</strong></p>
-                    <p>Concreto: <strong>${data.fck} MPa</strong></p>
+                    <p>Concreto: <strong>C${data.fck}/${data.fck+5} (${data.fck*10} kg/cm²)</strong></p>
                     <p>Módulo de Apoyo K: ${data.k_val} N/mm³</p>
-                    <p style="font-size:0.7rem; color:#888; font-style:italic; margin-top:10px;">Esta solución representa el equilibrio óptimo estructural para el Bekaert Floor Design.</p>
+                </div>
+            </div>
+
+            <div class="result-card" style="background:#f0f8ff; border:1px solid #004d80; margin-top:20px;">
+                <h3 style="margin-top:0; color:#004d80;">Especificaciones de Obra (TR34)</h3>
+                <div class="grid-2">
+                    <div>
+                        <p><strong>Corte de Juntas:</strong> Máximo cada ${data.joint_max_dist}</p>
+                        <p><strong>Refuerzo Bordes:</strong> ${data.edge_reinforcement}</p>
+                    </div>
+                    <div>
+                        <p><strong>Recubrimiento:</strong> ${data.cover}</p>
+                        <p><strong>Sub-base:</strong> Compactación 95% Protos Mod.</p>
+                    </div>
                 </div>
             </div>
         `;

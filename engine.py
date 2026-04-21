@@ -68,6 +68,17 @@ class PolykretEngine:
 
         return max_ratio_overall, f_metrics
 
+    def get_construction_details(self, h):
+        """Genera especificaciones de juntas y refuerzo adicional"""
+        joint_spacing = min(6.0, round((30 * h) / 1000, 1))
+        return {
+            "joint_max_dist": f"{joint_spacing}m x {joint_spacing}m",
+            "edge_reinforcement": "Varilla Ø8mm cada 100mm (Refuerzo superior en bordes libres)",
+            "cover": "40 mm",
+            "subbase_req": "Compactación al 95% Protos modificado, base granular nivelada ±10mm",
+            "joint_type": "Junta de contracción (aserrada a h/3) o de construcción con pasadores"
+        }
+
     def total_optimization(self, cbr, f_prime_c, load_params):
         # VALIDACIÓN MEJORADA: ¿Hay alguna carga?
         has_load = any([float(load_params.get(x, 0)) > 0 for x in ['load_f', 'fl_wheel_load', 'tr_wheel_load']])
@@ -85,8 +96,9 @@ class PolykretEngine:
                 while h <= 350:
                     ratio, m = self.check_design(h, d, f["t"], k, conc, load_params)
                     if ratio <= 1.0:
+                        details = self.get_construction_details(h)
                         return {"h": h, "dosage": d, "fiber_type": f["t"], "max_ratio": round(ratio, 2), 
-                                "k_val": k, "fck": conc["fck"], **m}
+                                "k_val": k, "fck": conc["fck"], **m, **details}
                     h += 10
         
         return {"error": "Diseño extremo: requiere revisión manual o mayor espesor.", "h": 400}
