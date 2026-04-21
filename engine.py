@@ -26,12 +26,8 @@ class PolykretEngine:
         return {"fr1": 3.5, "fr3": 3.9}      # Estándar 4D
 
     def check_design(self, h, dosage, fiber_type, k, conc, load_params):
-        """Verificación estructural núcleo"""
+        """Verificación estructural núcleo evaluando TODAS las cargas (Racks, Vehículos)"""
         lel = math.pow((conc["ecm"] * math.pow(h, 3)) / (12 * (1 - self.nu**2) * k), 0.25)
-        
-        f_ed = float(load_params['load_f']) * self.gamma_q
-        n_legs = int(load_params.get('n_legs', 1))
-        f_ed_eff = f_ed * (1 + 0.22 * (n_legs - 1))
 
         # Propiedades fibra dinámicas
         fb = self.get_fiber_factor(fiber_type)
@@ -42,26 +38,71 @@ class PolykretEngine:
         m_rd_f = fctd_avg * (0.9 * h) * (0.55 * h) / 1000
         m_rd_c = (conc["fctm_fl"] / self.gamma_c) * (h**2 / 6) / 1000
 
-        # Momentos Actuantes
-        a_rad = math.sqrt(float(load_params['plate_x']) * float(load_params['plate_y'])) / (2 * lel)
-        m_ed_center = (f_ed_eff / 4) * (1 - math.pow(a_rad, 0.6))
-        
-        # Ratios críticos
-        r_flex = m_ed_center / m_rd_f
-        r_joint = (m_ed_center * 1.35) / m_rd_f
-        r_edge = (m_ed_center * 1.95) / (m_rd_f + m_rd_c)
-        
-        # Punzonamiento
-        u1 = 2 * (float(load_params['plate_x']) + float(load_params['plate_y'])) + 4 * math.pi * h
-        v_ed = f_ed / (u1 * h) * 1000
-        v_rd = 0.27 * math.sqrt(m_rd_f / h)
-        r_punch = v_ed / v_rd if v_rd > 0 else 99
-        
-        # Suelo
-        r_soil = ((0.16 * f_ed_eff / (lel**2)) * 1000) / (5 * k * 1000)
+        max_ratio_overall = 0
+        f_metrics = {"ratio_flex": 0, "ratio_punch": 0, "ratio_soil": 0, "critical_load": "Ninguna"}
 
-        return max(r_flex, r_joint, r_edge, r_punch, r_soil), {
-            "ratio_flex": round(r_flex, 2), "ratio_punch": round(r_punch, 2), "ratio_soil": round(r_soil, 2)
+        def eval_point_load(f_ed, px, py):
+            # Momentos Actuantes
+            a_rad = math.sqrt(px * py) / (2 * lel) if lel > 0 else 1
+            m_ed_center = (f_ed / 4) * (1 - math.pow(a_rad, 0.6))
+            
+            # Ratios críticos
+            r_flex = m_ed_center / m_rd_f
+            r_joint = (m_ed_center * 1.35) / m_rd_f
+            r_edge = (m_ed_center * 1.95) / (m_rd_f + m_rd_c)
+            
+            # Punzonamiento
+            u1 = 2 * (px + py) + 4 * math.pi * h
+            v_ed = f_ed / (u1 * h) * 1000
+            v_rd = 0.27 * math.sqrt(m_rd_f / h)
+            r_punch = v_ed / v_rd if v_rd > 0 else 99
+            
+            # Suelo
+            r_soil = ((0.16 * f_ed / (lel**2)) * 1000) / (5 * k * 1000)
+            
+            return max(r_flex, r_joint, r_edge, r_punch, r_soil), r_flex, r_punch, r_soil
+
+        # 1. Analizar Rack
+        if float(load_params.get('load_f', 0)) > 0:
+            f_ed = float(load_params['load_f']) * self.gamma_q
+            n_legs = int(load_params.get('n_legs', 1))
+            f_ed_eff = f_ed * (1 + 0.22 * (n_legs - 1))
+            px, py = float(load_params.get('plate_x', 150)), float(load_params.get('plate_y', 150))
+            r_max, rf, rp, rs = eval_point_load(f_ed_eff, px, py)
+            if r_max > max_ratio_overall:
+                max_ratio_overall = r_max
+                f_metrics = {"ratio_flex": rf, "ratio_punch": rp, "ratio_soil": rs, "critical_load": "Racks"}
+
+        # 2. Analizar Montacargas (Forklifts)
+        if float(load_params.get('fl_wheel_load', 0)) > 0:
+            f_ed = float(load_params['fl_wheel_load']) * self.gamma_q
+            pressure = float(load_params.get('fl_pressure', 0) or 2.0) # 2 N/mm2 default
+            area = (float(load_params['fl_wheel_load']) * 1000) / pressure
+            px = math.sqrt(area)
+            r_max, rf, rp, rs = eval_point_load(f_ed, px, px)
+            if r_max > max_ratio_overall:
+                max_ratio_overall = r_max
+                f_metrics = {"ratio_flex": rf, "ratio_punch": rp, "ratio_soil": rs, "critical_load": "Montacargas"}
+
+        # 3. Analizar Camiones (Trucks)
+        if float(load_params.get('tr_wheel_load', 0)) > 0:
+            f_ed = float(load_params['tr_wheel_load']) * self.gamma_q
+            pressure = float(load_params.get('tr_pressure', 0) or 0.8) # 0.8 N/mm2 neumatico
+            area = (float(load_params['tr_wheel_load']) * 1000) / pressure
+            px = math.sqrt(area)
+            r_max, rf, rp, rs = eval_point_load(f_ed, px, px)
+            if r_max > max_ratio_overall:
+                max_ratio_overall = r_max
+                f_metrics = {"ratio_flex": rf, "ratio_punch": rp, "ratio_soil": rs, "critical_load": "Camiones"}
+
+        # Prevención por si no envían ninguna carga
+        if max_ratio_overall == 0: max_ratio_overall = 0.01
+
+        return max_ratio_overall, {
+            "ratio_flex": round(f_metrics["ratio_flex"], 2), 
+            "ratio_punch": round(f_metrics["ratio_punch"], 2), 
+            "ratio_soil": round(f_metrics["ratio_soil"], 2),
+            "critical_load": f_metrics["critical_load"]
         }
 
     def total_optimization(self, cbr, f_prime_c, load_params):

@@ -59,7 +59,7 @@ def render_pdf(data):
     
     pdf.set_font('Arial', '', 10)
     checks = [
-        ("Carga Puntual (Pata Rack)", f"{data['load_f']} kN", "SOLICITACIÓN"),
+        ("Elemento Crítico (Gobernante)", f"{data.get('critical_load', 'Rack')}", "EVALUADO"),
         ("Módulo de Reacción Suelo (k)", f"{data['k_val']} N/mm3", "PROPIEDAD"),
         ("Resistencia Flexo-tracción", f"{data['max_ratio']}", "CUMPLE" if data['max_ratio'] <= 1.0 else "FALLA"),
         ("Resistencia Punzonamiento", f"{data['ratio_punch']}", "CUMPLE" if data['ratio_punch'] <= 1.0 else "FALLA"),

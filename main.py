@@ -41,10 +41,14 @@ def perform_full_optimization(data: dict):
         fc = float(data.get('fc', 280))
         
         load_params = {
-            'load_f': float(data.get('load_f', 77)),
+            'load_f': float(data.get('load_f', 0) or 0),
             'plate_x': float(data.get('plate_x', 150) or 150),
             'plate_y': float(data.get('plate_y', 150) or 150),
-            'n_legs': int(data.get('n_legs', 1))
+            'n_legs': int(data.get('n_legs', 1) or 1),
+            'fl_wheel_load': float(data.get('fl_wheel_load', 0) or 0),
+            'fl_pressure': float(data.get('fl_pressure', 2.0) or 2.0),
+            'tr_wheel_load': float(data.get('tr_wheel_load', 0) or 0),
+            'tr_pressure': float(data.get('tr_pressure', 0.8) or 0.8)
         }
 
         # La magia ocurre aquí: Diseño Total
