@@ -231,22 +231,6 @@
             </div>
         </div>
 
-        <!-- REINFORCEMENT -->
-        <div class="section-title">Reinforcement (Fiber specification)</div>
-        <div class="grid-2">
-            <div class="input-group">
-                <label>Fiber Type</label>
-                <select name="fiber_type">
-                    <option value="4D 80/60BGE">Dramix® 4D 80/60BGE</option>
-                    <option value="3D 80/60BG">Dramix® 3D 80/60BG</option>
-                </select>
-            </div>
-            <div class="input-group">
-                <label>Dosage (kg/m³)</label>
-                <input type="number" name="dosage" value="22" step="0.5">
-            </div>
-        </div>
-
         <div class="section-title">Loads Specification</div>
         
         <!-- PALLET RACKING -->
@@ -375,31 +359,36 @@
         };
 
         summary.innerHTML = `
-            ${data.technical_alert ? `
-                <div style="background:#fff3cd; color:#856404; padding:15px; border:1px solid #ffeeba; border-radius:8px; margin-bottom:20px; font-weight:bold; border-left:5px solid #ffc107;">
-                    ⚠️ ${data.technical_alert}
-                </div>
-            ` : ''}
-            <div style="text-align:center; padding:20px; border:2px solid #004d80; border-radius:15px; background:white; margin-bottom:20px;">
-                <h1 style="margin:0; font-size:3rem; color:#004d80;">${data.h} mm</h1>
-                <p style="font-weight:600; text-transform:uppercase; letter-spacing:1px; margin:5px 0;">Espesor Mínimo Recomendado</p>
-                <div style="display:inline-block; padding:5px 15px; background:${getStatusColor(data.max_ratio)}; color:${data.max_ratio >= 0.95 && data.max_ratio <= 1.0 ? 'black' : 'white'}; border-radius:20px; font-size:0.9rem; font-weight:bold;">
-                    ${data.max_ratio > 1.0 ? 'DISEÑO NO VIABLE' : data.max_ratio >= 0.95 ? 'DISEÑO AJUSTADO (ALERTA)' : 'DISEÑO SEGURO'}
+            <div style="background:white; border:2px solid #004d80; border-radius:15px; overflow:hidden; margin-bottom:25px;">
+                <div style="background:#004d80; color:white; padding:15px; text-align:center; font-weight:bold;">SOLUCIÓN RECOMENDADA (POLYKRET OPTIMIZER)</div>
+                <div style="padding:25px; display:grid; grid-template-columns: 1fr 1fr 1fr; gap:15px; text-align:center;">
+                    <div>
+                        <span style="font-size:0.8rem; color:#666; text-transform:uppercase;">Espesor Losa</span>
+                        <h2 style="margin:5px 0; color:#004d80; font-size:2.5rem;">${data.h} <small style="font-size:1rem;">mm</small></h2>
+                    </div>
+                    <div>
+                        <span style="font-size:0.8rem; color:#666; text-transform:uppercase;">Fibra Dramix®</span>
+                        <h2 style="margin:5px 0; color:#004d80; font-size:1.5rem;">${data.fiber_type.split(' ')[1]}</h2>
+                    </div>
+                    <div>
+                        <span style="font-size:0.8rem; color:#666; text-transform:uppercase;">Dosificación</span>
+                        <h2 style="margin:5px 0; color:#004d80; font-size:2.2rem;">${data.dosage} <small style="font-size:1rem;">kg/m³</small></h2>
+                    </div>
                 </div>
             </div>
             
             <div class="grid-2">
                 <div class="result-card" style="background:#f8f9fa; border:1px solid #ddd;">
-                    <h3 style="margin-top:0">Ratios de Utilización (TR34)</h3>
-                    <p>Flexión (mEd/mRd): <strong style="color:${getStatusColor(data.ratio_flex)}">${data.ratio_flex}</strong></p>
+                    <h3 style="margin-top:0">Seguridad Estructural (Ratio)</h3>
+                    <p>Flexión/Juntas: <strong style="color:${getStatusColor(data.max_ratio)}">${data.max_ratio}</strong></p>
                     <p>Punzonamiento: <strong style="color:${getStatusColor(data.ratio_punch)}">${data.ratio_punch}</strong></p>
-                    <p>Presión Suelo: <strong style="color:${getStatusColor(data.ratio_soil)}">${data.ratio_soil}</strong></p>
+                    <p>Suelo: <strong>${data.ratio_soil}</strong></p>
                 </div>
                 <div class="result-card" style="background:#f8f9fa; border:1px solid #ddd;">
-                    <h3 style="margin-top:0">Detalles Técnicos</h3>
-                    <p>Módulo K: ${data.k_val} N/mm³</p>
-                    <p>Carga efectiva: ${data.h}mm slab</p>
-                    <p style="font-size:0.75rem; color:#666; font-style:italic;">Cálculo basado en la transferencia de carga en juntas (θ) y resistencia residual del concreto reforzado con fibras Dramix®.</p>
+                    <h3 style="margin-top:0">Especificaciones Técnicas</h3>
+                    <p>Concreto: <strong>${data.fck} MPa</strong></p>
+                    <p>Módulo de Apoyo K: ${data.k_val} N/mm³</p>
+                    <p style="font-size:0.7rem; color:#888; font-style:italic; margin-top:10px;">Esta solución representa el equilibrio óptimo entre economía de concreto y rendimiento de fibra acero.</p>
                 </div>
             </div>
         `;

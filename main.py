@@ -8,8 +8,9 @@ import os
 from engine import PolykretEngine
 from pdf_gen import render_pdf
 
-app = FastAPI(title="Polykret | Bekaert Standard Optimizer")
+app = FastAPI(title="Polykret | Poly Expert Design Optimizer")
 
+# Rutas
 base_dir = os.path.dirname(os.path.abspath(__file__))
 static_dir = os.path.join(base_dir, "static")
 templates_dir = os.path.join(base_dir, "templates")
@@ -26,7 +27,6 @@ async def read_root(request: Request):
     return HTMLResponse(content=content)
 
 async def get_request_data(request: Request):
-    """Detecta automáticamente si la entrada es JSON o Form-Data"""
     content_type = request.headers.get("content-type", "")
     if "application/json" in content_type:
         return await request.json()
@@ -34,62 +34,56 @@ async def get_request_data(request: Request):
         form_data = await request.form()
         return dict(form_data)
 
-def perform_optimization_logic(data: dict):
-    # Sanitizar y asegurar tipos
+def perform_full_optimization(data: dict):
     try:
+        # Solo necesitamos Suelo, Concreto y Carga
         cbr = float(data.get('cbr', 30))
         fc = float(data.get('fc', 280))
-        dosage = float(data.get('dosage', 22))
-        fiber_type = data.get('fiber_type', '4D 80/60BGE')
         
         load_params = {
-            'load_f': float(data.get('load_f', 77) or 0),
+            'load_f': float(data.get('load_f', 77)),
             'plate_x': float(data.get('plate_x', 150) or 150),
             'plate_y': float(data.get('plate_y', 150) or 150),
-            'rack_z': float(data.get('rack_z', 300) or 300),
-            'rack_x': float(data.get('rack_x', 1200) or 1200),
             'n_legs': int(data.get('n_legs', 1))
         }
 
-        results = engine.optimize_thickness(cbr, fc, dosage, fiber_type, load_params)
+        # La magia ocurre aquí: Diseño Total
+        results = engine.total_optimization(cbr, fc, load_params)
         
+        if "error" in results:
+            return results
+
         results.update({
             "date": datetime.now().strftime("%d/%m/%Y"),
             "time": datetime.now().strftime("%H:%M"),
             "project_name": data.get('project_name', 'Unnamed Project'),
             "client_name": data.get('client_name', 'Unnamed Client'),
-            "dosage": dosage,
             "load_f": load_params['load_f']
         })
         return results
     except Exception as e:
-        return {"error": str(e), "msg": "Error en el procesamiento de datos de entrada."}
+        return {"error": f"Error técnico: {str(e)}", "h": 0}
 
 @app.post("/calculate")
 async def calculate(request: Request):
     data = await get_request_data(request)
-    return perform_optimization_logic(data)
+    return perform_full_optimization(data)
 
 @app.post("/generate-pdf")
 async def generate_pdf(request: Request):
     data = await get_request_data(request)
+    optimized = perform_full_optimization(data)
     
-    optimized_results = perform_optimization_logic(data)
-    if "error" in optimized_results:
-        return Response(content=optimized_results["error"], status_code=400)
+    if "error" in optimized and not optimized.get('h'):
+        return Response(content=optimized["error"], status_code=400)
         
-    pdf_content = render_pdf(optimized_results)
-    
-    project = str(optimized_results.get('project_name', 'Report')).replace(' ', '_')
-    filename = f"Memoria_Polykret_{project}.pdf"
+    pdf_content = render_pdf(optimized)
+    filename = f"Propuesta_Polykret_{optimized.get('project_name','Recibido').replace(' ', '_')}.pdf"
     
     return Response(
         content=bytes(pdf_content),
         media_type="application/pdf",
-        headers={
-            "Content-Disposition": f"attachment; filename={filename}",
-            "Access-Control-Expose-Headers": "Content-Disposition"
-        }
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
     )
 
 if __name__ == "__main__":
