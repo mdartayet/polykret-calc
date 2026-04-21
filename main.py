@@ -73,9 +73,12 @@ async def calculate(request: Request):
     data = await get_request_data(request)
     return perform_full_optimization(data)
 
-@app.post("/generate-pdf")
+@app.api_route("/generate-pdf", methods=["GET", "POST"])
 async def generate_pdf(request: Request):
-    data = await get_request_data(request)
+    if request.method == "GET":
+        data = dict(request.query_params)
+    else:
+        data = await get_request_data(request)
     optimized = perform_full_optimization(data)
     
     if "error" in optimized and not optimized.get('h'):
